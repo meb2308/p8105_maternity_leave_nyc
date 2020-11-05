@@ -1,0 +1,27 @@
+---
+title: "p8105_proposal"
+output: html_document
+---
+
+Team registration and proposal
+First, you will define your teams and propose a project. This proposal should be a half-page to a page in length and include:
+The group members (names and UNIs): aw3251, asn2139, km3529, meb2308
+The tentative project title: Exploring Maternity Leave in NYC
+The motivation for this project: maternal disparities
+The intended final products: map showing avg maternity leaves per zipcode, one plotly showing comparisons of maternal leave based on ethnicity/race, scatterplot of weeks of leave by income level, a side-by-side of variables including depression, welfare, income BEFORE and AFTER birth
+The anticipated data sources: 
+·  	NYC Work and Family Leave Survey
+o   “The New York City Work and Family Leave Survey (WFLS), conducted in March 2016, was a telephone survey of New York City residents who gave birth in 2014. Its goal was to improve understanding about the availability and accessibility of paid family leave to working parents. The WFLS also sought to describe the role that paid family leave policies play in achieving health equity for parents and children. The WFLS was made possible through funding by the U.S. Department of Labor Women’s Bureau.”
+o   https://data.cityofnewyork.us/Health/New-York-City-Work-and-Family-Leave-Survey-WFLS-20/grnn-mvqe
+o   https://www1.nyc.gov/assets/doh/downloads/pdf/hca/paid-family-leave-report1.pdf
+
+
+The planned analyses / visualizations / coding challenges: recode all the variables and rename all the variables, filter interested variables, missing data, building leaflet maps in a new way, income data is limited from the main datasource (so we might have to find supplemental data using census.gov),  
+The planned timeline: 
+11/10: light lit-review and interested variables 
+11/12: finalized dataset that’s clean
+11/19: have solid drafts of the plot and get feedback during the meeting, write notes as you are going through plots
+12/1: have all of the plots finalized, webpage and screencast
+There should be one proposal per group, written collaboratively using .Rmd (rendering to a GH document) in a dedicated GitHub repo. Conceptually, this is intended to review a project that is 10% complete.
+
+

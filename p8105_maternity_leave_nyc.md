@@ -5,7 +5,7 @@ November 5, 2020
 Contributors: Amanda Warnock (aw3251), Meghan Bellerose (meb2308),
 Akanksha Nalatwad (asn2139), & Karina Myers (km3529)
 
-The tentative project title: Exploring Maternity Leave in NYC
+**Ttentative project title:** Exploring Maternity Leave in NYC
 
 **The motivation for this project:** There are many socioeconomic
 disparities related to maternal health outcomes (CDC, 2020). A piece of

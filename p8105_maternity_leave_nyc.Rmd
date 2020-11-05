@@ -4,3 +4,6 @@ author: Meghan Bellerose
 date: November 5, 2020
 output: github_document
 ---
+
+Contributors: Amanda Warnock, Meghan Bellerose, Akanksha Nalatwad, & Karina Myers
+Unis: aw3251, 

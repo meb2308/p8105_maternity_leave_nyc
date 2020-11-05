@@ -8,7 +8,7 @@ output: github_document
 Contributors: Amanda Warnock (aw3251), Meghan Bellerose (meb2308), Akanksha Nalatwad (asn2139), & Karina Myers (km3529) 
 
 
-The tentative project title: Exploring Maternity Leave in NYC
+**Ttentative project title:** Exploring Maternity Leave in NYC
 
 **The motivation for this project:** There are many socioeconomic disparities related to maternal health outcomes (CDC, 2020). A piece of this problem is the unequal access maternity leave. We want to explore elements related to maternity leave within New York City. In this project, we will explore racial, economic, and geographic differences in maternity leave behaviors. 
 

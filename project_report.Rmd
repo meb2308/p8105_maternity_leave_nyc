@@ -73,23 +73,22 @@ The NYC WFLS is a telephone survey conducted in March 2016, which was administer
 **Predictors**
  
  * `race` = race of survey respondent
+ * `income` = family income as percent of the federal poverty level
 
 ### **Data Cleaning**
 
-Read in dataset and select variables for analysis
+Read in dataset, create weeks of family leave variable, and select variables for analysis
 
 ```{r}
 wfls_df = 
   read_csv("./data/WFLS_2014.csv") %>% 
-  select("resp", "mp1", "ph1", "bc2", "pph1":"el3", "el9", "el11":"cp1", "mh1", "mh4", "cc1", "fixd2":"d7", "st2":"es4", "SAMP_WEIGHT", "POP_WEIGHT", "stratum")
+  mutate(
+    recode_el12_1 = case_when(
+      el12_1 == '1' ~ "0"), 
+    recode_el12mns = el12mns*4,
+    leave_weeks = coalesce(recode_el12mns, el12wks)) %>% 
+  select("resp", "mp1", "ph1", "bc2", "pph1":"el3", "el9", "el11", "el13a":"cp1", "mh1", "mh4", "cc1", "fixd2":"d7", "st2":"es4", "SAMP_WEIGHT", "POP_WEIGHT", "stratum", "leave_weeks")
 ```
-
-Create weeks of family leave variable
-
-```{r}
-
-```
-
 
 Create single race variable
 

@@ -145,4 +145,4 @@ wfls_df %>%
 ```
 
 
-#### **NYC Health Report and Related Work**
+## NYC Health Report and Related Work

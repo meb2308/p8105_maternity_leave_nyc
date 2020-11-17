@@ -72,12 +72,17 @@ The NYC WFLS is a telephone survey conducted in March 2016, which was administer
  
 **Predictors**
  
+ * `zip_code` = zip code
  * `race` = race of survey respondent
  * `income` = family income as percent of the federal poverty level
+ * `food_insecurity` = concern about having enough food to feed family or recieves public assistance in the form of SNAP benefits / food stamps
+ * `education` = highest grade or year of school completed
 
 ### **Data Cleaning**
 
 Read in dataset, create weeks of family leave variable, and select variables for analysis
+
+NOTE: unpaid_leave_weeks needs to be fixed to make 77 and 99 NAs - also it's not always matching leave_type so we'll need to choose which one to trust
 
 ```{r}
 wfls_df = 
@@ -86,8 +91,16 @@ wfls_df =
     recode_el12_1 = case_when(
       el12_1 == '1' ~ "0"), 
     recode_el12mns = el12mns*4,
-    leave_weeks = coalesce(recode_el12mns, el12wks)) %>% 
-  select("resp", "mp1", "ph1", "bc2", "pph1":"el3", "el9", "el11", "el13a":"cp1", "mh1", "mh4", "cc1", "fixd2":"d7", "st2":"es4", "SAMP_WEIGHT", "POP_WEIGHT", "stratum", "leave_weeks")
+    el11 = as.character(el11),
+    leave_type = case_when(
+      el11 == '1' ~ "Paid",
+      el11 == '2' ~ "Unpaid",
+      el11 == '3' ~ "Both",
+      el11 == '4' ~ "Did not take time off"),
+    leave_weeks = coalesce(recode_el12mns, el12wks),
+    unpaid_leave_weeks = el13d,
+    pct_unpaid = round((unpaid_leave_weeks/leave_weeks)*100),4) %>% 
+  select("resp", "mp1", "ph1", "bc2", "pph1":"el3", "el9", "el11", "el13a":"cp1", "mh1", "mh4", "cc1", "fixd2":"d7", "st2":"es4", "SAMP_WEIGHT":"stratum", "leave_type": "pct_unpaid")
 ```
 
 Create single race variable
@@ -117,8 +130,8 @@ Exploratory chart of length of maternity leave by race / ethnicity
 
 ```{r}
 wfls_df %>% 
-  ggplot(aes(x = race, y = paid_leave_weeks)) + 
-  geombar()
+  ggplot(aes(x = race, y = leave_weeks)) +
+  geom_bar()
 ```
 
 

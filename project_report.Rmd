@@ -119,25 +119,26 @@ wfls_df =
       d4_1 == '1' ~ "White",
       d4_1 == '2' ~ "Black/African American",
       d4_1 == '3' ~ "Asian",
-      d4_1 == '4' ~ "Native Hawaiian/ OPI",
-      d4_1 == '5' ~ "American Indian / AN",
+      d4_1 == '4' ~ "Native Hawaiian/OPI",
+      d4_1 == '5' ~ "American Indian/AN",
       d4_1 == '8' ~ "Other",
       hispanic == 1 ~ "Hispanic",
-      multiple_races == 1 ~ "Multiple"))
+      multiple_races == 1 ~ "Multiple")) %>% 
+  drop_na(race)
 ```
 
 Exploratory chart of length of maternity leave by race / ethnicity 
 
 ```{r}
 wfls_df %>% 
-  group_by(race, leave_weeks) %>% 
+  group_by(leave_weeks, race) %>%
   summarize(mean_leave_weeks = mean(leave_weeks)) %>%
   mutate(race = fct_reorder(race, mean_leave_weeks)) %>%
   ggplot(aes(x = race, fill = race)) +
   geom_bar() +
   theme(axis.text.x = element_text(angle = 60, vjust = 0.5, hjust =1), legend.position = "none") +
   labs(
-    title = "Average Weeks of maternity leave by race",
+    title = "Average weeks of maternity leave by race",
     x = "Race",
     y = "Mean weeks of leave"
   )

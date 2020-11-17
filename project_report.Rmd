@@ -130,8 +130,17 @@ Exploratory chart of length of maternity leave by race / ethnicity
 
 ```{r}
 wfls_df %>% 
-  ggplot(aes(x = race, y = leave_weeks)) +
-  geom_bar()
+  group_by(race, leave_weeks) %>% 
+  summarize(mean_leave_weeks = mean(leave_weeks)) %>%
+  mutate(race = fct_reorder(race, mean_leave_weeks)) %>%
+  ggplot(aes(x = race, fill = race)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 60, vjust = 0.5, hjust =1), legend.position = "none") +
+  labs(
+    title = "Average Weeks of maternity leave by race",
+    x = "Race",
+    y = "Mean weeks of leave"
+  )
 ```
 
 

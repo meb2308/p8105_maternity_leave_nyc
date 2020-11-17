@@ -1,19 +1,26 @@
 ---
-title: "Data Cleaning and Plot Drafts"
-authors: Amanda, Meghan, Akanksha, & Karina
-date: November 12, 2020
-output: github_document
+title: "Project Report Draft"
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    code_folding: hide
+editor_options: 
+  chunk_output_type: console
 ---
 
-# Settings
-
-```{r, echo = FALSE}
+```{r setup, include = FALSE}
 library(tidyverse)
+library(readxl)
+library(plotly)
 
 knitr::opts_chunk$set(
   fig.width = 6,
   fig.asp = .6,
-  out.width = "90%"
+  out.width = "90%", 
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE
 )
 
 theme_set(theme_minimal() + theme(legend.position = "bottom"))
@@ -27,7 +34,41 @@ scale_colour_discrete = scale_colour_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
 ```
 
-# Data Cleaning
+<style type="text/css">
+
+h1.title {
+  text-align: center;
+}
+
+</style>
+
+## Motivation
+
+
+## Questions
+
+1. 
+
+2. 
+
+3. 
+
+## Data 
+
+#### **Data Sources**
+
+Our primary data source is the [NYC Work and Family Leave Survey (WFLS)](https://data.cityofnewyork.us/Health/New-York-City-Work-and-Family-Leave-Survey-WFLS-20/grnn-mvqe).
+
+The NYC WFLS is a telephone survey conducted in March 2016, which was administered to 1,000 New York City residents who gave birth in 2014. The goal was to understand the availability and accessibility of paid family leave to working parents. The WLFS also sought to describe the role that paid family leave policies play in achieving health equity for parents and children.
+
+#### **Variables of interest***
+
+**Outcomes**
+
+ * `leave_weeks` = weeks of maternity leave (paid or unpaid)
+ * `paid_leave_weeks` = weeks of paid maternity leave 
+ * `unpaid_leave_weeks` = weeks of unpaid maternity leave
+ * others....
 
 Read in dataset and select variables for analysis
 
@@ -35,5 +76,7 @@ Read in dataset and select variables for analysis
 wfls_df = 
   read_csv("./data/WFLS_2014.csv") %>% 
   select("resp", "mp1", "ph1", "bc2", "pph1":"el3", "el9", "el11":"cp1", "mh1", "mh4", "cc1", "fixd2":"d7", "st2":"es4", "SAMP_WEIGHT", "POP_WEIGHT", "stratum")
+
 ```
 
+#### **NYC Health Report and Related Work**

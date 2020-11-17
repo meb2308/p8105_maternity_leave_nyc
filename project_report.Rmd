@@ -86,22 +86,34 @@ wfls_df =
 
 Create single race variable
 
-(We should think a bit about how to approach race. Right now I made all people who mentioned more than one race a separate category but this may not be best. If we keep this we should remove d4_3 to d4_6)
+(I need to think more about how to combine multiple races and Hispanic into a new race variable)
 
 ```{r}
 wfls_df =
   wfls_df %>% 
-  mutate(d4_1 = as.character(d4_1)) %>% 
   mutate(
-    race = recode(d4_1,
-         '1' = "White",
-         '2' = "Black/African American",
-         '3' = "Asian",
-         '4' = "Native Hawaiian/ OPI",
-         '5' = "American Indian / AN",
-         '8' = "Other")) %>% 
+    d4_1 = as.character(d4_1),
+    d3 = as.character(d3)) %>% 
+  mutate(
+    multiple_races = as.numeric(d4_2 %in% c(1:8)),
+    hispanic = as.numeric(d3 %in% c(1))) %>% 
+  mutate(
+    race = case_when(
+      d4_1 == '1' ~ "White",
+      d4_1 == '2' ~ "Black/African American",
+      d4_1 == '3' ~ "Asian",
+      d4_1 == '4' ~ "Native Hawaiian/ OPI",
+      d4_1 == '5' ~ "American Indian / AN",
+      d4_1 == '8' ~ "Other",
+      hispanic == 1 ~ "Hispanic",
+      multiple_races == 1 ~ "Multiple"))
 ```
 
+Exploratory chart of length of maternity leave by race / ethnicity 
+
+```{r}
+
+```
 
 
 #### **NYC Health Report and Related Work**

@@ -1,0 +1,34 @@
+---
+title: "What factors predict length of paid maternity leave"
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+---
+
+<style type="text/css">
+
+h1.title {
+  text-align: center;
+}
+
+</style>
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readxl)
+library(plotly)
+library(rgdal)
+library(maps)
+library(devtools)
+library(leaflet)
+library(maptools)
+library(BAMMtools)
+library(patchwork)
+```
+
+### Mapping predictors of length of paid maternity leave
+
+

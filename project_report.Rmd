@@ -72,7 +72,7 @@ The NYC WFLS is a telephone survey conducted in March 2016, which was administer
  
 **Predictors**
  
- * list...
+ * `race` = race of survey respondent
 
 ### **Data Cleaning**
 
@@ -84,9 +84,14 @@ wfls_df =
   select("resp", "mp1", "ph1", "bc2", "pph1":"el3", "el9", "el11":"cp1", "mh1", "mh4", "cc1", "fixd2":"d7", "st2":"es4", "SAMP_WEIGHT", "POP_WEIGHT", "stratum")
 ```
 
-Create single race variable
+Create weeks of family leave variable
 
-(I need to think more about how to combine multiple races and Hispanic into a new race variable)
+```{r}
+
+```
+
+
+Create single race variable
 
 ```{r}
 wfls_df =
@@ -112,7 +117,9 @@ wfls_df =
 Exploratory chart of length of maternity leave by race / ethnicity 
 
 ```{r}
-
+wfls_df %>% 
+  ggplot(aes(x = race, y = paid_leave_weeks)) + 
+  geombar()
 ```
 
 

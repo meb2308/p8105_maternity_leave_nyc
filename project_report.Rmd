@@ -61,6 +61,8 @@ Our primary data source is the [NYC Work and Family Leave Survey (WFLS)](https:/
 
 The NYC WFLS is a telephone survey conducted in March 2016, which was administered to 1,000 New York City residents who gave birth in 2014. The goal was to understand the availability and accessibility of paid family leave to working parents. The WLFS also sought to describe the role that paid family leave policies play in achieving health equity for parents and children.
 
+NYC zipcodes by neighborhood and borough came from the [New York State Department of Health Zipcode Definitions Page](https://www.health.ny.gov/statistics/cancer/registry/appendix/neighborhoods.htm).
+
 ### **Variables of interest***
 
 **Outcomes**
@@ -72,7 +74,7 @@ The NYC WFLS is a telephone survey conducted in March 2016, which was administer
  
 **Predictors**
 
- * `zip_code` = zip code
+ * `neighborhood` = neighborhood (based on five digit zip code)
  * `race` = race of survey respondent
  * `income` = family income as percent of the federal poverty level
  * `food_insecurity` = concern about having enough food to feed family or receives public assistance in the form of SNAP benefits / food stamps
@@ -86,6 +88,7 @@ The NYC WFLS is a telephone survey conducted in March 2016, which was administer
 Read in data, create weeks of family leave variables, and select variables for analysis
 
 (for some reason leave type doesn't always match up with number of unpaid leave weeks -- we'll have to decide which to trust)
+(also anyone know how to set all 77 and 99s to NA -- we could just do this at the start and remove those lines of code)
 
 ```{r}
 wfls_df = 
@@ -104,8 +107,13 @@ wfls_df =
     unpaid_leave_weeks = el13d,
     unpaid_leave_weeks = na_if(unpaid_leave_weeks, 77),
     unpaid_leave_weeks = na_if(unpaid_leave_weeks, 99),
-    pct_unpaid = round((unpaid_leave_weeks/leave_weeks)*100),4) %>% 
-  select("resp", "mp1", "ph1", "bc2", "pph1":"el3", "el9", "el11", "el13a":"cp1", "mh1", "mh4", "cc1", "fixd2":"d7", "st2":"es4", "SAMP_WEIGHT":"stratum", "leave_type": "pct_unpaid")
+    pct_unpaid = round((unpaid_leave_weeks/leave_weeks)*100),4,
+    partner = case_when(
+      cp1 == '1' ~ "Co-parent",
+      cp1 == '2' ~ "Single Parent"
+    )
+  ) %>% 
+  select("resp", "mp1", "ph1", "bc2", "pph1":"el3", "el9", "el11", "el13a":"cp1", "mh1", "mh4", "cc1", "fixd2":"d7", "st2":"es4", "SAMP_WEIGHT":"stratum", "leave_type": "partner")
 ```
 
 Create single race variable
@@ -129,7 +137,7 @@ wfls_df =
       d4_1 == '8' ~ "Other",
       hispanic == 1 ~ "Hispanic",
       multiple_races == 1 ~ "Multiple")) %>% 
-  drop_na(race)
+  drop_na(race, partner)
 ```
 
 Save cleaned data set
@@ -155,5 +163,23 @@ wfls_df %>%
     y = "Mean weeks of leave"
   )
 ```
+
+Exploratory chart of average length of maternity leave by co-parenting status
+
+```{r}
+wfls_df %>% 
+  group_by(leave_weeks, partner) %>%
+  summarize(mean_leave_weeks = mean(leave_weeks)) %>%
+  mutate(race = fct_reorder(partner, mean_leave_weeks)) %>%
+  ggplot(aes(x = partner, fill = partner)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 60, vjust = 0.5, hjust =1), legend.position = "none") +
+  labs(
+    title = "Average weeks of maternity leave by co-parenting status",
+    x = "",
+    y = "Mean weeks of leave"
+  )
+```
+
 
 ## NYC Health Report and Related Work

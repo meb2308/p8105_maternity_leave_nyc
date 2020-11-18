@@ -183,4 +183,20 @@ wfls_df %>%
 ```
 
 
+plot of salary and zip codes, colors by leave type
+
+```{r}
+wfls_df %>%  
+  mutate(
+    es3 = na_if(es3, 77),
+    es3 = na_if(es3, 99),
+    el11 = na_if(el11, 77),
+    el11 = na_if(el11, 99)
+  ) %>% 
+ggplot(aes(x = zipcode, y = es3, color = el11)) +
+  geom_point()
+```
+^ need to transfrom salary from 1-11 into actual numbers?
+
+
 ## NYC Health Report and Related Work

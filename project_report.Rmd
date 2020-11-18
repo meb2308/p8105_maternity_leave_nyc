@@ -110,24 +110,16 @@ wfls_df =
     pct_unpaid = round((unpaid_leave_weeks/leave_weeks)*100),4,
     partner = case_when(
       cp1 == '1' ~ "Co-parent",
-      cp1 == '2' ~ "Single Parent"
-    )
-  ) %>% 
-  select("resp", "mp1", "ph1", "bc2", "pph1":"el3", "el9", "el11", "el13a":"cp1", "mh1", "mh4", "cc1", "fixd2":"d7", "st2":"es4", "SAMP_WEIGHT":"stratum", "leave_type": "partner")
-```
-
-Create single race variable
-
-```{r}
-wfls_df =
-  wfls_df %>% 
-  mutate(
-    d4_1 = as.character(d4_1),
-    d3 = as.character(d3)) %>% 
-  mutate(
-    multiple_races = as.numeric(d4_2 %in% c(1:8)),
-    hispanic = as.numeric(d3 %in% c(1))) %>% 
-  mutate(
+      cp1 == '2' ~ "Single Parent"),
+    education = case_when(
+      d7 == '1' ~ "No high school degree",
+      d7 == '2' ~ "No high school degree",
+      d7 == '3' ~ "No high school degree",
+      d7 == '4' ~ "High school degree/GED",
+      d7 == '5' ~ "Some college or technical school",
+      d7 == '6' ~ "Four year college or higher"),
+    d4_2 = na_if(d4_2, 77),
+    d4_2 = na_if(d4_2, 99),
     race = case_when(
       d4_1 == '1' ~ "White",
       d4_1 == '2' ~ "Black/African American",
@@ -135,9 +127,16 @@ wfls_df =
       d4_1 == '4' ~ "Native Hawaiian/OPI",
       d4_1 == '5' ~ "American Indian/AN",
       d4_1 == '8' ~ "Other",
-      hispanic == 1 ~ "Hispanic",
-      multiple_races == 1 ~ "Multiple")) %>% 
-  drop_na(race, partner)
+      d3 == 1 ~ "Hispanic",
+      d4_2 >= 1 ~ "Multiple"),
+    job_type = case_when(
+      el3 == '1' ~ "Government",
+      el3 == '2' ~ "Private",
+      el3 == '3' ~ "Non-profit",
+      el3 == '4' ~ "Self-employed"
+    ),
+    zipcode = fixd2) %>% 
+  select("ph1":"el1", "el9", "el11", "el13a":"el17f", "ih1", "mh4", "es1a": "es3", "SAMP_WEIGHT", "POP_WEIGHT", "leave_type":"pct_unpaid", "partner":"zipcode", "d4_2")
 ```
 
 Save cleaned data set
@@ -151,6 +150,7 @@ Exploratory chart of average length of maternity leave by race / ethnicity
 
 ```{r}
 wfls_df %>% 
+  drop_na(race) %>% 
   group_by(leave_weeks, race) %>%
   summarize(mean_leave_weeks = mean(leave_weeks)) %>%
   mutate(race = fct_reorder(race, mean_leave_weeks)) %>%
@@ -168,6 +168,7 @@ Exploratory chart of average length of maternity leave by co-parenting status
 
 ```{r}
 wfls_df %>% 
+  drop_na(partner) %>% 
   group_by(leave_weeks, partner) %>%
   summarize(mean_leave_weeks = mean(leave_weeks)) %>%
   mutate(race = fct_reorder(partner, mean_leave_weeks)) %>%

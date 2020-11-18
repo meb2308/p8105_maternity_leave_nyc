@@ -47,11 +47,11 @@ h1.title {
 
 ## Questions
 
-1. 
+1. How does length of maternity leave taken by women in New York City vary according to key socioeconomic characteristics?
 
-2. 
+2. How does length of maternity leave differ by zip code? Do these spacial patterns match the distribution of key socioeconomic characteristics?
 
-3. 
+3. Is the geographic distribution of average length of maternity leave associated with X, Y, X?
 
 ## Data 
 
@@ -68,15 +68,18 @@ The NYC WFLS is a telephone survey conducted in March 2016, which was administer
  * `leave_weeks` = weeks of maternity leave (paid or unpaid)
  * `paid_leave_weeks` = weeks of paid maternity leave 
  * `unpaid_leave_weeks` = weeks of unpaid maternity leave
- * others....
+ * `postpartum_check` = had a postpartum checkup 4-6 weeks after giving birth
  
 **Predictors**
- 
+
  * `zip_code` = zip code
  * `race` = race of survey respondent
  * `income` = family income as percent of the federal poverty level
  * `food_insecurity` = concern about having enough food to feed family or recieves public assistance in the form of SNAP benefits / food stamps
  * `education` = highest grade or year of school completed
+ * `partner` = co-parenting status (single or co-parent)
+ * `fmla` = access to FMLA
+ * `employment_type` = type of employment during pregnancy (government, private company, non-profit, self-employed)
 
 ### **Data Cleaning**
 
@@ -127,6 +130,13 @@ wfls_df =
   drop_na(race)
 ```
 
+Save cleaned data set
+
+```{r}
+write.csv(wfls_df, "./data/cleaned_wfls.csv")
+```
+
+
 Exploratory chart of length of maternity leave by race / ethnicity 
 
 ```{r}
@@ -143,6 +153,5 @@ wfls_df %>%
     y = "Mean weeks of leave"
   )
 ```
-
 
 ## NYC Health Report and Related Work

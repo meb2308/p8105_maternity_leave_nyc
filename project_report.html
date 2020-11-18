@@ -1597,9 +1597,9 @@ h1.title {
 <div id="questions" class="section level2">
 <h2>Questions</h2>
 <ol style="list-style-type: decimal">
-<li></li>
-<li></li>
-<li></li>
+<li><p>How does length of maternity leave taken by women in New York City vary according to key socioeconomic characteristics?</p></li>
+<li><p>How does length of maternity leave differ by zip code? Do these spacial patterns match the distribution of key socioeconomic characteristics?</p></li>
+<li><p>Is the geographic distribution of average length of maternity leave associated with X, Y, X?</p></li>
 </ol>
 </div>
 <div id="data" class="section level2">
@@ -1616,7 +1616,7 @@ h1.title {
 <li><code>leave_weeks</code> = weeks of maternity leave (paid or unpaid)</li>
 <li><code>paid_leave_weeks</code> = weeks of paid maternity leave</li>
 <li><code>unpaid_leave_weeks</code> = weeks of unpaid maternity leave</li>
-<li>others….</li>
+<li><code>postpartum_check</code> = had a postpartum checkup 4-6 weeks after giving birth</li>
 </ul>
 <p><strong>Predictors</strong></p>
 <ul>
@@ -1625,6 +1625,9 @@ h1.title {
 <li><code>income</code> = family income as percent of the federal poverty level</li>
 <li><code>food_insecurity</code> = concern about having enough food to feed family or recieves public assistance in the form of SNAP benefits / food stamps</li>
 <li><code>education</code> = highest grade or year of school completed</li>
+<li><code>partner</code> = co-parenting status (single or co-parent)</li>
+<li><code>fmla</code> = access to FMLA</li>
+<li><code>employment_type</code> = type of employment during pregnancy (government, private company, non-profit, self-employed)</li>
 </ul>
 </div>
 <div id="data-cleaning" class="section level3">
@@ -1667,6 +1670,8 @@ h1.title {
       hispanic == 1 ~ &quot;Hispanic&quot;,
       multiple_races == 1 ~ &quot;Multiple&quot;)) %&gt;% 
   drop_na(race)</code></pre>
+<p>Save cleaned data set</p>
+<pre class="r"><code>write.csv(wfls_df, &quot;./data/cleaned_wfls.csv&quot;)</code></pre>
 <p>Exploratory chart of length of maternity leave by race / ethnicity</p>
 <pre class="r"><code>wfls_df %&gt;% 
   group_by(leave_weeks, race) %&gt;%

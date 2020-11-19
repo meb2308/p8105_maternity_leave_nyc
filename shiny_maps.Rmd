@@ -1,0 +1,22 @@
+---
+title: "Maternity Leave in NYC"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    source: embed
+    runtime: shiny
+---
+
+```{r}
+library(tidyverse)
+library(p8105.datasets)
+library(plotly)
+library(flexdashboard)
+library(shiny)
+```
+
+```{r}
+
+```
+

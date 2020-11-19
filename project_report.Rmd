@@ -80,7 +80,6 @@ NYC zipcodes by neighborhood and borough came from the [New York State Departmen
  * `food_insecurity` = concern about having enough food to feed family or receives public assistance in the form of SNAP benefits / food stamps
  * `education` = highest grade or year of school completed
  * `partner` = co-parenting status (single or co-parent)
- * `fmla` = access to FMLA
  * `employment_type` = type of employment during pregnancy (government, private company, non-profit, self-employed)
 
 ### **Data Cleaning**
@@ -215,7 +214,7 @@ wfls_df %>%
 ggplot(aes(x = zipcode, y = es3, color = el11)) +
   geom_point()
 ```
-^ need to transfrom salary from 1-11 into actual numbers?
+^ need to transform salary from 1-11 into actual numbers?
 
 
 

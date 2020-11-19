@@ -161,11 +161,29 @@ Save cleaned data set
 write.csv(wfls_df, "./data/cleaned_wfls.csv")
 ```
 
+Merge data sets
+
+```{r}
+cleaned_wfls = 
+  read_csv("./data/cleaned_wfls.csv")
+
+zipcodes =
+  read_xlsx("./data/zip_codes.xlsx") %>% 
+  mutate(zipcode = as.character(zipcode))
+
+merged_wfls = 
+  left_join(cleaned_wfls, zipcodes, by = "zipcode")
+```
+
+```{r}
+write.csv(merged_wfls, "./data/merged_wfls.csv")
+```
+
 
 Exploratory chart of average length of maternity leave by race / ethnicity 
 
 ```{r}
-wfls_df %>% 
+merged_wfls %>% 
   drop_na(race) %>% 
   group_by(leave_weeks, race) %>%
   summarize(mean_leave_weeks = mean(leave_weeks)) %>%

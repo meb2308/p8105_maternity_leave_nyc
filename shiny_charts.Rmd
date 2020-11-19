@@ -24,9 +24,15 @@ library(flexdashboard)
 library(shiny)
 
 charts_df = 
-  read_csv("./data/merged_wfls.csv") %>% 
-  drop_na(leave_type)
+  read_csv("./data/merged_wfls.csv")
 ```
+
+This interactive display allows you to plot the average number of hours or paid or unpaid leave taken by women in NYC by key sociodemographic characteristics. 
+
+TO ADD:
+* Option to select all of NYC
+* Remove "did not take leave"?
+* Bar graph that incorporates each factor (could have drop down for select 1st factor to display, select 2nd factor or present an average value for all factors combined with no visualization)
 
 ```{r}
 borough_choices = 
@@ -36,7 +42,7 @@ borough_choices =
 
 selectInput(
   "borough_choice",
-  h3("Borough Choice"),
+  h3("Borough"),
   choices = borough_choices,
   selected = "Manhattan"
 )
@@ -66,5 +72,59 @@ radioButtons(
   selected = NULL
   )
 
-  
+partner = charts_df %>% 
+  pull(partner) %>% unique()
+
+radioButtons(
+  "partner",
+  h3("Co-parenting Status"),
+  choices = partner,
+  selected = NULL
+  )
+
+education = charts_df %>% 
+  pull(education) %>% unique()
+
+radioButtons(
+  "education",
+  h3("Educational Attainment"),
+  choices = education,
+  selected = NULL
+  )
+
+employment = charts_df %>% 
+  pull(job_type) %>% unique()
+
+radioButtons(
+  "employment",
+  h3("Employment Type"),
+  choices = employment,
+  selected = NULL
+  )
+
+food_insecurity = charts_df %>% 
+  pull(food_insecurity) %>% unique()
+
+checkboxInput(
+  "food_insecurity",
+  h3("Food Insecure"),
+  selected = NULL
+  )
+
 ```
+
+This piece doesn't work yet - just included to see the general format
+
+```{r}
+renderPrint(
+  input[["borough_choice"]]
+)
+
+charts_df %>% 
+  drop_na(leave_weeks) %>% 
+  summarize(mean_leave_weeks = mean(leave_weeks)) %>% 
+  plot_ly(
+    x = ~neighborhood, y = ~mean_leave_weeks, color = ~neighborhood,
+    type = "bar", colors = "viridis")
+```
+

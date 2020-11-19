@@ -85,10 +85,7 @@ NYC zipcodes by neighborhood and borough came from the [New York State Departmen
 
 ### **Data Cleaning**
 
-Read in data, create weeks of family leave variables, and select variables for analysis
-
-(for some reason leave type doesn't always match up with number of unpaid leave weeks -- we'll have to decide which to trust)
-(also anyone know how to set all 77 and 99s to NA -- we could just do this at the start and remove those lines of code)
+Read in data, create new variables, and select key variables for analysis
 
 ```{r}
 wfls_df = 

@@ -13,6 +13,7 @@ editor_options:
 library(tidyverse)
 library(readxl)
 library(plotly)
+library(janitor)
 
 knitr::opts_chunk$set(
   fig.width = 6,
@@ -103,9 +104,9 @@ wfls_df =
     leave_weeks = coalesce(recode_el12mns, el12wks),
     leave_weeks = na_if(leave_weeks, 77),
     leave_weeks = na_if(leave_weeks, 99),
-    unpaid_leave_weeks = el13d,
-    unpaid_leave_weeks = na_if(unpaid_leave_weeks, 77),
-    unpaid_leave_weeks = na_if(unpaid_leave_weeks, 99),
+    ulw_recode = case_when(
+      leave_type == "Unpaid" ~ leave_weeks),
+    unpaid_leave_weeks = coalesce(ulw_recode, el13d),
     pct_unpaid = round((unpaid_leave_weeks/leave_weeks)*100),4,
     partner = case_when(
       cp1 == '1' ~ "Co-parent",
@@ -235,10 +236,6 @@ wfls_df %>%
   plot_ly(x = ~bf1_1, color = ~leave_type, type = "histogram", colors = "viridis")
 
 ```
-
-
-
-
 
 
 

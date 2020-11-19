@@ -133,10 +133,29 @@ wfls_df =
       el3 == '1' ~ "Government",
       el3 == '2' ~ "Private",
       el3 == '3' ~ "Non-profit",
-      el3 == '4' ~ "Self-employed"
-    ),
+      el3 == '4' ~ "Self-employed"), 
+    unemploy_reason = el16, 
+    unemploy_reason = case_when( 
+      el16 == '1' ~ "Fired related to pregnancy or maternity leave", 
+      el16 == '2' ~ "Chose to stay-at-home", 
+      el16 == '3' ~ "Not enough flexibility", 
+      el16 == '4' ~ "No affordable childcare", 
+      el16 == '5' ~ "My health issues", 
+      el16 == '6' ~ "Baby's health issues", 
+      el16 == '7' ~ "Currently a student", 
+      el16 == '8' ~ "Can't find work", 
+      el16 == '9' ~ "Looking for other jobs", 
+      el16 == '10' ~ "other") ,
+    bf1_1 = case_when(
+      bf1_1 == '1' ~ "Never", 
+      bf1_1 == '2' ~ "Less than 1 Week", 
+      bf1_1 == '3' ~ "Weeks", 
+      bf1_1 == '4' ~ "Months", 
+      bf1_1 == '5' ~ "Still breastfeeding", 
+      bf1_1 == '77' ~ "don't know", 
+      bf1_1 == '99' ~ "refused"), 
     zipcode = fixd2) %>% 
-  select("ph1":"el1", "el9", "el11", "el13a":"el17f", "ih1", "mh4", "es1a": "es3", "SAMP_WEIGHT", "POP_WEIGHT", "leave_type":"pct_unpaid", "partner":"zipcode", "d4_2")
+  select("ph1":"el1", "el9", "el11", "el13a":"el17f", "ih1", "mh4", "es1a": "es3", "SAMP_WEIGHT", "POP_WEIGHT", "leave_type":"pct_unpaid", "partner":"zipcode", "d4_2", "unemploy_reason", "bf1_1")
 ```
 
 Save cleaned data set
@@ -197,6 +216,31 @@ ggplot(aes(x = zipcode, y = es3, color = el11)) +
   geom_point()
 ```
 ^ need to transfrom salary from 1-11 into actual numbers?
+
+
+
+Factors Affecting Return to Work 
+```{r}
+wfls_df %>%
+  plot_ly(x = ~unemploy_reason, color = ~race, type = "histogram", colors = "viridis")
+
+
+wfls_df %>%
+  plot_ly(x = ~unemploy_reason, color = ~education, type = "histogram", colors = "viridis")
+```
+
+
+PostPartum checkup, breast feeding, and leave
+```{r}
+wfls_df %>%
+  plot_ly(x = ~bf1_1, color = ~leave_type, type = "histogram", colors = "viridis")
+
+```
+
+
+
+
+
 
 
 ## NYC Health Report and Related Work

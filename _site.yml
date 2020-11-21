@@ -4,7 +4,7 @@ navbar:
   title: "Home"
   left:
     - text: "About"
-      href: index.html
+      href: about.html
     - text: "Exploratory Analyses"
       href: variables_mat_leave.html
   right:    

@@ -4,7 +4,7 @@ output:
   flexdashboard::flex_dashboard:
     orientation: columns
     vertical_layout: fill
-    source: embed
+    source_code: embed
     runtime: shiny
 ---
 
@@ -27,25 +27,47 @@ library(shiny)
 
 charts_df = 
   read_csv("./data/merged_wfls.csv")
+
 ```
 
-This interactive display allows you to plot the average number of hours or paid or unpaid leave taken by women in NYC by key sociodemographic characteristics. 
 
 TO ADD:
 * Option to select all of NYC
 * Remove "did not take leave"?
-* Bar graph that incorporates each factor (could have drop down for select 1st factor to display, select 2nd factor or present an average value for all factors combined with no visualization)
+* Bar graph that incorporates 2 factors (select one or select 2 together)?
+* Maps that allow you to select 2 factors? Or compare maps feature where you can place multiple beside one another?
 
 
-
-Sidebar {.sidebar}
+Weeks of Paid Maternity Leave Predictor
 =====================================
 
+Column {.sidebar}
+
 ```{r}
+
+#entries to choose from
 borough_choices = 
   charts_df %>% 
   pull(borough) %>%  
   unique()
+
+type = charts_df %>% 
+  pull(leave_type) %>% unique()
+
+race = charts_df %>% 
+  pull(race) %>% unique()
+
+partner = charts_df %>% 
+  pull(partner) %>% unique()
+
+education = charts_df %>% 
+  pull(education) %>% unique()
+
+employment = charts_df %>% 
+  pull(job_type) %>% unique()
+
+food_insecurity = charts_df %>% 
+  pull(food_insecurity) %>% unique()
 
 selectInput(
   "borough_choice",
@@ -53,9 +75,6 @@ selectInput(
   choices = borough_choices,
   selected = "Manhattan"
 )
-
-type = charts_df %>% 
-  pull(leave_type) %>% unique()
 
 radioButtons(
   "type",
@@ -69,18 +88,12 @@ sliderInput(
   0,100000,
   value = c(0,100000))
 
-race = charts_df %>% 
-  pull(race) %>% unique()
-
 radioButtons(
   "race",
   h3("Race"),
   choices = race,
   selected = NULL
   )
-
-partner = charts_df %>% 
-  pull(partner) %>% unique()
 
 radioButtons(
   "partner",
@@ -89,9 +102,6 @@ radioButtons(
   selected = NULL
   )
 
-education = charts_df %>% 
-  pull(education) %>% unique()
-
 radioButtons(
   "education",
   h3("Educational Attainment"),
@@ -99,18 +109,12 @@ radioButtons(
   selected = NULL
   )
 
-employment = charts_df %>% 
-  pull(job_type) %>% unique()
-
 radioButtons(
   "employment",
   h3("Employment Type"),
   choices = employment,
   selected = NULL
   )
-
-food_insecurity = charts_df %>% 
-  pull(food_insecurity) %>% unique()
 
 checkboxInput(
   "food_insecurity",
@@ -120,15 +124,41 @@ checkboxInput(
 
 ```
 
+Add some sort of renderText or renderSummary description with the prediction
+
 Charts
 ===================================== 
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+```{r}
+selectInput(
+  "borough_choice",
+  h3("Choose a Borough"),
+  choices = borough_choices,
+  selected = "Manhattan"
+)
+
+selectInput(
+  "choices",
+  h3("Choose first factor"),
+  choices = as.list(options),
+  selected = "Race")
+
+selectInput(
+  "choices",
+  h3("Choose second factor"),
+  choices = as.list(options),
+  selected = "Race")
+```
 
 ```{r}
 renderPlotly({
   charts_df %>% 
   filter(
     !is.na(leave_weeks) & borough == input$borough_choice) %>% 
-  group_by(leave_weeks) %>% 
+  group_by(leave_weeks, race) %>% 
   summarize(mean_leave_weeks = mean(leave_weeks)) %>% 
   plot_ly(
     x = ~race, y = ~mean_leave_weeks, color = ~race,
@@ -142,3 +172,25 @@ renderPlotly({
 
 NYC Maps
 ===================================== 
+
+```{r}
+selectInput(
+  "borough_choice",
+  h3("Choose a Borough"),
+  choices = borough_choices,
+  selected = "Manhattan"
+)
+
+selectInput(
+  "choices",
+  h3("Choose first factor"),
+  choices = as.list(options),
+  selected = "Race")
+
+selectInput(
+  "choices",
+  h3("Choose second factor"),
+  choices = as.list(options),
+  selected = "Race")
+```
+

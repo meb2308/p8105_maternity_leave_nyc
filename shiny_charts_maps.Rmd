@@ -13,10 +13,10 @@ This won't run until we add a website with something like this syntax in the sit
   right:
     - text: "Report"
       href: project_report.html
-    - text: "Paid Leave Predictor"
-      href: shiny_charts.html
-    - text: "Paid Leave Maps"
-      href: shiny_maps.html
+    - text: "Paid Leave Dashboard"
+      href: shiny_charts_maps.html
+      
+      (eventually these would become href: https://uni-shiny.shinyapps.io/page_name/)
 
 ```{r, include=FALSE}
 library(tidyverse)
@@ -35,6 +35,11 @@ TO ADD:
 * Option to select all of NYC
 * Remove "did not take leave"?
 * Bar graph that incorporates each factor (could have drop down for select 1st factor to display, select 2nd factor or present an average value for all factors combined with no visualization)
+
+
+
+Sidebar {.sidebar}
+=====================================
 
 ```{r}
 borough_choices = 
@@ -115,18 +120,25 @@ checkboxInput(
 
 ```
 
-This piece doesn't work yet - just included to see the general format
+Charts
+===================================== 
 
 ```{r}
-renderPrint(
-  input[["borough_choice"]]
-)
-
-charts_df %>% 
-  drop_na(leave_weeks) %>% 
+renderPlotly({
+  charts_df %>% 
+  filter(
+    !is.na(leave_weeks) & borough == input$borough_choice) %>% 
+  group_by(leave_weeks) %>% 
   summarize(mean_leave_weeks = mean(leave_weeks)) %>% 
   plot_ly(
-    x = ~neighborhood, y = ~mean_leave_weeks, color = ~neighborhood,
-    type = "bar", colors = "viridis")
+    x = ~race, y = ~mean_leave_weeks, color = ~race,
+    type = "bar", colors = "viridis") %>% 
+  layout(
+    title = "Title",
+    x = list(title = "title"),
+    y = list(title = "title"))
+})
 ```
 
+NYC Maps
+===================================== 

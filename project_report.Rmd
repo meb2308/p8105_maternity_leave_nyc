@@ -1,0 +1,265 @@
+---
+title: "Project Report Draft"
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    code_folding: hide
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+library(tidyverse)
+library(readxl)
+library(plotly)
+library(janitor)
+
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%", 
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+<style type="text/css">
+
+h1.title {
+  text-align: center;
+}
+
+</style>
+
+## Motivation
+
+
+## Questions
+
+1. How does length of maternity leave taken by women in New York City vary according to key socioeconomic characteristics?
+
+2. How does length of maternity leave differ by zip code? Do these spacial patterns match the distribution of key socioeconomic characteristics?
+
+3. Is the geographic distribution of average length of maternity leave associated with X, Y, X?
+
+## Data 
+
+### **Data Sources**
+
+Our primary data source is the [NYC Work and Family Leave Survey (WFLS)](https://data.cityofnewyork.us/Health/New-York-City-Work-and-Family-Leave-Survey-WFLS-20/grnn-mvqe).
+
+The NYC WFLS is a telephone survey conducted in March 2016, which was administered to 1,000 New York City residents who gave birth in 2014. The goal was to understand the availability and accessibility of paid family leave to working parents. The WLFS also sought to describe the role that paid family leave policies play in achieving health equity for parents and children.
+
+NYC zipcodes by neighborhood and borough came from the [New York State Department of Health Zipcode Definitions Page](https://www.health.ny.gov/statistics/cancer/registry/appendix/neighborhoods.htm).
+
+### **Variables of interest***
+
+**Outcomes**
+
+ * `leave_weeks` = weeks of maternity leave (paid or unpaid)
+ * `paid_leave_weeks` = weeks of paid maternity leave 
+ * `unpaid_leave_weeks` = weeks of unpaid maternity leave
+ * `postpartum_check` = had a postpartum checkup 4-6 weeks after giving birth
+ 
+**Predictors**
+
+ * `neighborhood` = neighborhood (based on five digit zip code)
+ * `race` = race of survey respondent
+ * `income` = family income as percent of the federal poverty level
+ * `food_insecurity` = concern about having enough food to feed family or receives public assistance in the form of SNAP benefits / food stamps
+ * `education` = highest grade or year of school completed
+ * `partner` = co-parenting status (single or co-parent)
+ * `job_type` = type of employment during pregnancy (government, private company, non-profit, self-employed)
+
+### **Data Cleaning**
+
+Read in data, create new variables, and select key variables for analysis
+
+```{r}
+wfls_df = 
+  read_csv("./data/WFLS_2014.csv") %>% 
+  mutate(
+    recode_el12mns = el12mns*4,
+    el11 = as.character(el11),
+    leave_type = case_when(
+      el11 == '1' ~ "Paid",
+      el11 == '2' ~ "Unpaid",
+      el11 == '3' ~ "Both",
+      el11 == '4' ~ "Did not take time off"),
+    leave_weeks = coalesce(recode_el12mns, el12wks),
+    leave_weeks = na_if(leave_weeks, 77),
+    leave_weeks = na_if(leave_weeks, 99),
+    ulw_recode = case_when(
+      leave_type == "Unpaid" ~ leave_weeks),
+    unpaid_leave_weeks = coalesce(ulw_recode, el13d),
+    pct_unpaid = round((unpaid_leave_weeks/leave_weeks)*100),4,
+    partner = case_when(
+      cp1 == '1' ~ "Co-parent",
+      cp1 == '2' ~ "Single Parent"),
+    education = case_when(
+      d7 == '1' ~ "No high school degree",
+      d7 == '2' ~ "No high school degree",
+      d7 == '3' ~ "No high school degree",
+      d7 == '4' ~ "High school degree/GED",
+      d7 == '5' ~ "Some college or technical school",
+      d7 == '6' ~ "Four year college or higher"),
+    d4_2 = na_if(d4_2, 77),
+    d4_2 = na_if(d4_2, 99),
+    race = case_when(
+      d4_1 == '1' ~ "White",
+      d4_1 == '2' ~ "Black/African American",
+      d4_1 == '3' ~ "Asian",
+      d4_1 == '4' ~ "Native Hawaiian/OPI",
+      d4_1 == '5' ~ "American Indian/AN",
+      d4_1 == '8' ~ "Other",
+      d3 == 1 ~ "Hispanic",
+      d4_2 >= 1 ~ "Multiple"),
+    job_type = case_when(
+      el3 == '1' ~ "Government",
+      el3 == '2' ~ "Private",
+      el3 == '3' ~ "Non-profit",
+      el3 == '4' ~ "Self-employed"), 
+    unemploy_reason = el16, 
+    unemploy_reason = case_when( 
+      el16 == '1' ~ "Fired related to pregnancy or maternity leave", 
+      el16 == '2' ~ "Chose to stay-at-home", 
+      el16 == '3' ~ "Not enough flexibility", 
+      el16 == '4' ~ "No affordable childcare", 
+      el16 == '5' ~ "My health issues", 
+      el16 == '6' ~ "Baby's health issues", 
+      el16 == '7' ~ "Currently a student", 
+      el16 == '8' ~ "Can't find work", 
+      el16 == '9' ~ "Looking for other jobs", 
+      el16 == '10' ~ "other") ,
+    bf1_1 = case_when(
+      bf1_1 == '1' ~ "Never", 
+      bf1_1 == '2' ~ "Less than 1 Week", 
+      bf1_1 == '3' ~ "Weeks", 
+      bf1_1 == '4' ~ "Months", 
+      bf1_1 == '5' ~ "Still breastfeeding", 
+      bf1_1 == '77' ~ "don't know", 
+      bf1_1 == '99' ~ "refused"), 
+    food_insecurity = case_when(
+      es2 == 1 ~ 1,
+      es1a == 1 ~ 1,
+      es1a == 2 ~ 1,
+      es1a == 3 ~ 1,
+      es2 == 0 ~ 0,
+      es1a == 4 ~ 0
+    ),
+    zipcode = fixd2) %>% 
+  select("ph1":"el1", "el9", "el11", "el13a":"el17f", "ih1", "mh4", "es1a": "es3", "SAMP_WEIGHT", "POP_WEIGHT", "leave_type":"pct_unpaid", "partner":"zipcode")
+```
+
+Save cleaned data set
+
+```{r}
+write.csv(wfls_df, "./data/cleaned_wfls.csv")
+```
+
+Merge data sets
+
+```{r}
+cleaned_wfls = 
+  read_csv("./data/cleaned_wfls.csv")
+
+zipcodes =
+  read_xlsx("./data/zip_codes.xlsx") %>% 
+  mutate(zipcode = as.character(zipcode))
+
+merged_wfls = 
+  left_join(cleaned_wfls, zipcodes, by = "zipcode")
+```
+
+```{r}
+write.csv(merged_wfls, "./data/merged_wfls.csv")
+```
+
+
+Exploratory chart of average length of maternity leave by race / ethnicity 
+
+```{r}
+merged_wfls %>% 
+  drop_na(race) %>% 
+  group_by(leave_weeks, race) %>%
+  summarize(mean_leave_weeks = mean(leave_weeks)) %>%
+  mutate(race = fct_reorder(race, mean_leave_weeks)) %>%
+  ggplot(aes(x = race, fill = race)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 60, vjust = 0.5, hjust =1), legend.position = "none") +
+  labs(
+    title = "Average weeks of maternity leave by race",
+    x = "Race",
+    y = "Mean weeks of leave"
+  )
+```
+
+Exploratory chart of average length of maternity leave by co-parenting status
+
+```{r}
+wfls_df %>% 
+  drop_na(partner) %>% 
+  group_by(leave_weeks, partner) %>%
+  summarize(mean_leave_weeks = mean(leave_weeks)) %>%
+  mutate(race = fct_reorder(partner, mean_leave_weeks)) %>%
+  ggplot(aes(x = partner, fill = partner)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 60, vjust = 0.5, hjust =1), legend.position = "none") +
+  labs(
+    title = "Average weeks of maternity leave by co-parenting status",
+    x = "",
+    y = "Mean weeks of leave"
+  )
+```
+
+
+plot of salary and zip codes, colors by leave type
+
+```{r}
+wfls_df %>%  
+  mutate(
+    es3 = na_if(es3, 77),
+    es3 = na_if(es3, 99),
+    el11 = na_if(el11, 77),
+    el11 = na_if(el11, 99)
+  ) %>% 
+ggplot(aes(x = zipcode, y = es3, color = el11)) +
+  geom_point()
+```
+^ need to transform salary from 1-11 into actual numbers?
+
+
+
+Factors Affecting Return to Work 
+```{r}
+wfls_df %>%
+  plot_ly(x = ~unemploy_reason, color = ~race, type = "histogram", colors = "viridis")
+
+
+wfls_df %>%
+  plot_ly(x = ~unemploy_reason, color = ~education, type = "histogram", colors = "viridis")
+```
+
+
+PostPartum checkup, breast feeding, and leave
+```{r}
+wfls_df %>%
+  plot_ly(x = ~bf1_1, color = ~leave_type, type = "histogram", colors = "viridis")
+
+```
+
+
+
+## NYC Health Report and Related Work

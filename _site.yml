@@ -16,6 +16,6 @@ navbar:
       href: https://github.com/meb2308/p8105_maternity_leave_nyc
 output:
   html_document:
-    theme: cerulean
+    theme: cosmo
     includes:
       after_body: footer.html

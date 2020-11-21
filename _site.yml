@@ -1,0 +1,16 @@
+name: "Exploring Maternity Leave in NYC"
+output_dir: "."
+navbar:
+  title: "Home"
+  right:
+    - text: "Home"
+      href: index.html
+    - text: "Factors That Affect Maternity Leave"
+      href: variables_mat_leave.html
+    - icon: fa-github fa-lg
+      href: https://github.com/meb2308/p8105_maternity_leave_nyc
+output:
+  html_document:
+    theme: cerulean
+    includes:
+      after_body: footer.html

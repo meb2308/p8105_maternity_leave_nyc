@@ -9,8 +9,9 @@ output:
 
 ![](images/title_pic.jpg)
 
-## "Maternity Leave and paternity leave is absolutely vital for stregthening families. It's an issue for men and women."
-                          -Quentin Bryce
+> "Maternity Leave and paternity leave is absolutely vital for stregthening families.
+> It's an issue for men and women. " - Quentin Bryce
+
 
 ## Introduction {.tabset}
 
@@ -26,6 +27,6 @@ o   “The New York City Work and Family Leave Survey (WFLS), conducted in March
 
 
 
-## Summary of Findings {.tabset}
+Summary of Findings {.tabset}
 -
 

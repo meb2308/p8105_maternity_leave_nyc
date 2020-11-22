@@ -8,6 +8,10 @@ navbar:
     - text: "Exploratory Analyses"
       href: variables_mat_leave.html
   right:    
+    - text: "Report"
+      href: project_report.html
+    - text: "Paid Leave Dashboard"
+      href: https://meb2308-shiny.shinyapps.io/shiny_charts_maps/
     - text: "Conclusions"
       href: conclusions.html
     - icon: fa-youtube fa-lg

@@ -8,16 +8,6 @@ output:
     runtime: shiny
 ---
 
-This won't run until we add a website with something like this syntax in the site_yml, but I made a dummy website to test some of it:
-
-  right:
-    - text: "Report"
-      href: project_report.html
-    - text: "Paid Leave Dashboard"
-      href: shiny_charts_maps.html
-      
-      (eventually these would become href: https://uni-shiny.shinyapps.io/page_name/)
-
 ```{r, include=FALSE}
 library(tidyverse)
 library(p8105.datasets)
@@ -26,24 +16,17 @@ library(flexdashboard)
 library(shiny)
 
 charts_df = 
-  read_csv("./data/merged_wfls.csv")
-
+  read_csv("./data/merged_wfls.csv") %>% 
+  drop_na(borough, race, job_type, leave_type, education, partner, family_income)
 ```
-
-
-TO ADD:
-* Option to select all of NYC
-* Remove "did not take leave"?
-* Bar graph that incorporates 2 factors (select one or select 2 together)?
-* Maps that allow you to select 2 factors? Or compare maps feature where you can place multiple beside one another?
-
 
 Weeks of Paid Maternity Leave Predictor
 =====================================
 
 Column {.sidebar}
+-----------------------------------------------------------------------
 
-```{r}
+```{r for_sidebar}
 
 #entries to choose from
 borough_choices = 
@@ -69,58 +52,45 @@ employment = charts_df %>%
 food_insecurity = charts_df %>% 
   pull(food_insecurity) %>% unique()
 
+family_income = charts_df %>% 
+  pull(family_income) %>% unique()
+
 selectInput(
   "borough_choice",
   h3("Borough"),
   choices = borough_choices,
-  selected = "Manhattan"
-)
+  selected = "Manhattan")
 
 radioButtons(
   "type",
   h3("Type of Leave"),
-  choices = type,
-  selected = NULL)
+  choices = type)
   
-sliderInput(
-  "income",
+selectInput(
+  "family_income",
   h3("Family Income"),
-  0,100000,
-  value = c(0,100000))
+  choices = family_income,
+  selected = "Less than $16,000")
 
 radioButtons(
   "race",
   h3("Race"),
-  choices = race,
-  selected = NULL
-  )
+  choices = race)
 
 radioButtons(
   "partner",
   h3("Co-parenting Status"),
-  choices = partner,
-  selected = NULL
-  )
+  choices = partner)
 
 radioButtons(
   "education",
-  h3("Educational Attainment"),
-  choices = education,
-  selected = NULL
-  )
+  h3("Education"),
+  choices = education)
 
 radioButtons(
   "employment",
   h3("Employment Type"),
-  choices = employment,
-  selected = NULL
-  )
-
-checkboxInput(
-  "food_insecurity",
-  h3("Food Insecure"),
-  selected = NULL
-  )
+  choices = employment)
 
 ```
 
@@ -132,25 +102,65 @@ Charts
 Column {.sidebar}
 -----------------------------------------------------------------------
 
-```{r}
+```{r, include = FALSE}
+ui <- fluidPage(
+
 selectInput(
-  "borough_choice",
-  h3("Choose a Borough"),
-  choices = borough_choices,
-  selected = "Manhattan"
-)
+  "geography",
+  h3("Choose a gegraphy"),
+  choices = list("All of NYC", "Result by borough")
+),
+conditionalPanel(
+  condition = "input.geography == 'Result by borough'",
+    selectInput(
+    "borough_choice",
+    h3("Choose a borough"),
+    choices = borough_choices)),
 
 selectInput(
   "choices",
   h3("Choose first factor"),
-  choices = as.list(options),
-  selected = "Race")
+  choices = list("Race", "Food insecurity", "Employment Type", "Co-parenting Status", "Family Income", "Type of Leave")),
+conditionalPanel(
+  condition = "input.choices == 'Race'",
+  radioButtons(
+  "race",
+  h3("Race"),
+  choices = race)),
+conditionalPanel(
+  condition = "input.choices == 'Employment Type'",
+  radioButtons(
+  "employment",
+  h3("Employment Type"),
+  choices = employment)),
+conditionalPanel(
+  condition = "input.choices == 'Co-parenting Status'",
+  radioButtons(
+  "partner",
+  h3("Co-parenting Status"),
+  choices = partner)),
+conditionalPanel(
+  condition = "input.choices == 'Education'",
+  radioButtons(
+  "education",
+  h3("Education"),
+  choices = education)),
+conditionalPanel(
+  condition = "input.choices == 'Family Income'",
+  selectInput(
+  "family_income",
+  h3("Family Income"),
+  choices = family_income,
+  selected = "Less than $16,000")),
 
 selectInput(
   "choices",
   h3("Choose second factor"),
-  choices = as.list(options),
-  selected = "Race")
+  choices = list("Race", "Food insecurity", "Employment Type", "Co-parenting Status", "Family Income", "Type of Leave"))
+
+)
+
+
 ```
 
 ```{r}
@@ -161,7 +171,7 @@ renderPlotly({
   group_by(leave_weeks, race) %>% 
   summarize(mean_leave_weeks = mean(leave_weeks)) %>% 
   plot_ly(
-    x = ~race, y = ~mean_leave_weeks, color = ~race,
+    x = ~choices, y = ~mean_leave_weeks, color = ~choices,
     type = "bar", colors = "viridis") %>% 
   layout(
     title = "Title",
@@ -173,24 +183,4 @@ renderPlotly({
 NYC Maps
 ===================================== 
 
-```{r}
-selectInput(
-  "borough_choice",
-  h3("Choose a Borough"),
-  choices = borough_choices,
-  selected = "Manhattan"
-)
-
-selectInput(
-  "choices",
-  h3("Choose first factor"),
-  choices = as.list(options),
-  selected = "Race")
-
-selectInput(
-  "choices",
-  h3("Choose second factor"),
-  choices = as.list(options),
-  selected = "Race")
-```
 

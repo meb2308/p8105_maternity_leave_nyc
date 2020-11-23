@@ -81,7 +81,7 @@ NYC zipcodes by neighborhood and borough came from the [New York State Departmen
  * `food_insecurity` = concern about having enough food to feed family or receives public assistance in the form of SNAP benefits / food stamps
  * `education` = highest grade or year of school completed
  * `partner` = co-parenting status (single or co-parent)
- * `job_type` = type of employment during pregnancy (government, private company, non-profit, self-employed)
+ * `employment_type` = type of employment during pregnancy (government, private company, non-profit, self-employed)
 
 ### **Data Cleaning**
 
@@ -151,16 +151,13 @@ wfls_df =
       bf1_1 == '5' ~ "Still breastfeeding", 
       bf1_1 == '77' ~ "don't know", 
       bf1_1 == '99' ~ "refused"), 
-    food_insecurity = case_when(
-      es2 == 1 ~ 1,
-      es1a == 1 ~ 1,
-      es1a == 2 ~ 1,
-      es1a == 3 ~ 1,
-      es2 == 0 ~ 0,
-      es1a == 4 ~ 0
-    ),
     zipcode = fixd2) %>% 
-  select("ph1":"el1", "el9", "el11", "el13a":"el17f", "ih1", "mh4", "es1a": "es3", "SAMP_WEIGHT", "POP_WEIGHT", "leave_type":"pct_unpaid", "partner":"zipcode")
+  select("ph1":"el1", "el9", "el11", "el13a":"el17f", "ih1", "mh4", "es1a": "es3", "SAMP_WEIGHT", "POP_WEIGHT", "leave_type":"pct_unpaid", "partner":"zipcode", "d4_2", "unemploy_reason", "bf1_1", "d7", "d4_1", "cp1", "el3")
+
+wfls_df %>% 
+  mutate(
+    race_num = race
+  )
 ```
 
 Save cleaned data set
@@ -169,29 +166,11 @@ Save cleaned data set
 write.csv(wfls_df, "./data/cleaned_wfls.csv")
 ```
 
-Merge data sets
-
-```{r}
-cleaned_wfls = 
-  read_csv("./data/cleaned_wfls.csv")
-
-zipcodes =
-  read_xlsx("./data/zip_codes.xlsx") %>% 
-  mutate(zipcode = as.character(zipcode))
-
-merged_wfls = 
-  left_join(cleaned_wfls, zipcodes, by = "zipcode")
-```
-
-```{r}
-write.csv(merged_wfls, "./data/merged_wfls.csv")
-```
-
 
 Exploratory chart of average length of maternity leave by race / ethnicity 
 
 ```{r}
-merged_wfls %>% 
+wfls_df %>% 
   drop_na(race) %>% 
   group_by(leave_weeks, race) %>%
   summarize(mean_leave_weeks = mean(leave_weeks)) %>%
@@ -238,7 +217,7 @@ wfls_df %>%
 ggplot(aes(x = zipcode, y = es3, color = el11)) +
   geom_point()
 ```
-^ need to transform salary from 1-11 into actual numbers?
+^ need to transform salary from 1-11 into actual numbers? Dont include this. 
 
 
 

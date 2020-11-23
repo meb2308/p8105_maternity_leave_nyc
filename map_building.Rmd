@@ -26,6 +26,22 @@ library(leaflet)
 library(patchwork)
 ```
 
+Merge data sets
+
+```{r}
+cleaned_wfls = 
+  read_csv("./data/cleaned_wfls.csv")
+
+zipcodes =
+  read_xlsx("./data/zip_codes.xlsx") %>% 
+  mutate(zipcode = as.character(zipcode))
+
+merged_wfls = 
+  left_join(cleaned_wfls, zipcodes, by = "zipcode")
+
+write.csv(wfls_df, "./data/merged_wfls.csv")
+```
+
 ### Mapping predictors of length of paid maternity leave
 
 

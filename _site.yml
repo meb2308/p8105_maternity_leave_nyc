@@ -11,7 +11,7 @@ navbar:
     - text: "Report"
       href: project_report.html
     - text: "Paid Leave Dashboard"
-      href: https://meb2308-shiny.shinyapps.io/shiny_charts_maps/
+      href: https://meb2308.shinyapps.io/meb2308_shiny/
     - text: "Conclusions"
       href: conclusions.html
     - icon: fa-youtube fa-lg

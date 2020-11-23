@@ -1,5 +1,5 @@
 ---
-title: "Paid Leave Predictor"
+title: "Maternity Leave in NYC"
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
@@ -16,10 +16,12 @@ library(shiny)
 
 charts_df = 
   read_csv("./data/merged_wfls.csv") %>% 
+  mutate(
+    mean_leave_weeks = mean(leave_weeks)) %>%
   drop_na(borough, race, job_type, leave_type, education, partner, family_income)
 ```
 
-Weeks of Paid Maternity Leave Predictor
+Weeks of Leave Predictor
 =====================================
 
 Column {.sidebar}
@@ -91,23 +93,25 @@ radioButtons(
   h3("Employment Type"),
   choices = employment)
 
+# rsconnect::deployApp/meb2308_shiny.Rmd"
 ```
 
-Add some sort of renderText or renderSummary description with the prediction
 
-Charts
-===================================== 
+
+Socioeconomic Characteristics
+=====================================
 
 Column {.sidebar}
 -----------------------------------------------------------------------
 
-```{r}
+```{r for_sidebar_2}
 
 selectInput(
   "geography",
-  h3("Choose a gegraphy"),
+  h3("Choose a geography"),
   choices = list("All of NYC", "Result by borough")
-),
+)
+
 conditionalPanel(
   condition = "input.geography == 'Result by borough'",
     selectInput(
@@ -118,31 +122,36 @@ conditionalPanel(
 selectInput(
   "choices",
   h3("Choose first factor"),
-  choices = list("Race", "Food insecurity", "Employment Type", "Co-parenting Status", "Family Income", "Type of Leave")),
+  choices = list("Race", "Employment Type", "Co-parenting Status", "Family Income"))
+
 conditionalPanel(
   condition = "input.choices == 'Race'",
   radioButtons(
   "race",
   h3("Race"),
-  choices = race)),
+  choices = race))
+
 conditionalPanel(
   condition = "input.choices == 'Employment Type'",
   radioButtons(
   "employment",
   h3("Employment Type"),
-  choices = employment)),
+  choices = employment))
+
 conditionalPanel(
   condition = "input.choices == 'Co-parenting Status'",
   radioButtons(
   "partner",
   h3("Co-parenting Status"),
-  choices = partner)),
+  choices = partner))
+
 conditionalPanel(
   condition = "input.choices == 'Education'",
   radioButtons(
   "education",
   h3("Education"),
-  choices = education)),
+  choices = education))
+
 conditionalPanel(
   condition = "input.choices == 'Family Income'",
   selectInput(
@@ -150,7 +159,6 @@ conditionalPanel(
   h3("Family Income"),
   choices = family_income,
   selected = "Less than $16,000"))
-
 ```
 
 Column {.tabset}
@@ -160,22 +168,35 @@ Column {.tabset}
 ```{r}
 renderPlotly({
   charts_df %>% 
-  filter(
-    !is.na(leave_weeks) & borough == input$borough_choice) %>% 
-  group_by(leave_weeks, race) %>% 
-  summarize(mean_leave_weeks = mean(leave_weeks)) %>% 
+  filter(borough == input$borough_choice) %>% 
   plot_ly(
-    x = ~choices, y = ~mean_leave_weeks, color = ~choices,
+    x = ~input$choices, y = ~mean_leave_weeks, color = ~input$choices,
     type = "bar", colors = "viridis") %>% 
   layout(
     title = "Title",
     x = list(title = "title"),
-    y = list(title = "title"))
+    y = list(title = "Mean weeks of paid leave"))
 })
 ```
 
 NYC Maps
 ===================================== 
 
+```{r for_sidebar_3}
 
-# rsconnect::deployApp("./shiny_charts_maps.Rmd")
+#entries to choose from
+borough_choices = 
+  charts_df %>% 
+  pull(borough) %>%  
+  unique()
+
+selectInput(
+  "borough_choice",
+  h3("Borough"),
+  choices = borough_choices,
+  selected = "Manhattan")
+
+# rsconnect::deployApp("./meb2308_shiny.Rmd")
+```
+
+

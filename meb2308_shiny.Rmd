@@ -196,6 +196,47 @@ selectInput(
   choices = borough_choices,
   selected = "Manhattan")
 
+selectInput(
+  "choices",
+  h3("Choose first factor"),
+  choices = list("Race", "Employment Type", "Co-parenting Status", "Family Income"))
+
+conditionalPanel(
+  condition = "input.choices == 'Race'",
+  radioButtons(
+  "race",
+  h3("Race"),
+  choices = race))
+
+conditionalPanel(
+  condition = "input.choices == 'Employment Type'",
+  radioButtons(
+  "employment",
+  h3("Employment Type"),
+  choices = employment))
+
+conditionalPanel(
+  condition = "input.choices == 'Co-parenting Status'",
+  radioButtons(
+  "partner",
+  h3("Co-parenting Status"),
+  choices = partner))
+
+conditionalPanel(
+  condition = "input.choices == 'Education'",
+  radioButtons(
+  "education",
+  h3("Education"),
+  choices = education))
+
+conditionalPanel(
+  condition = "input.choices == 'Family Income'",
+  selectInput(
+  "family_income",
+  h3("Family Income"),
+  choices = family_income,
+  selected = "Less than $16,000"))
+
 # rsconnect::deployApp("./meb2308_shiny.Rmd")
 ```
 

@@ -226,6 +226,163 @@ race =
 ggplotly(race)
 ```
 
+1a) Unpaid Leave by Race
+```{r}
+unpaid = 
+  merged_wfls %>% 
+  drop_na(race) %>% 
+  drop_na(unpaid_leave_weeks) %>% 
+  mutate(race = fct_reorder(race, unpaid_leave_weeks)) %>% 
+  ggplot(aes(x = race, y = unpaid_leave_weeks, fill = race, alpha = 0.9)) + 
+    geom_boxplot() + 
+  theme(axis.text.x = element_text(angle = 60, vjust = 0.5, hjust = 1), legend.position = "none") +
+  labs(
+    title = "Unpaid maternity leave by race",
+    x = "Race",
+    y = "Unpaid Weeks of leave"
+  )
+
+ggplotly(unpaid)
+```
+
+
+2) Length of maternity leave by co-parenting status 
+```{r}
+parent = 
+  merged_wfls %>% 
+  drop_na(partner) %>% 
+  drop_na(leave_weeks) %>%
+ ggplot(aes(x = partner, y = leave_weeks, fill = partner)) +
+  geom_boxplot() +
+  labs(
+    title = "Weeks of maternity leave by co-parenting status",
+    x = "Co-parenting status",
+    y = "Weeks of leave"
+  )
+ggplotly(parent)
+```
+
+
+3a) income, food insecurity, and unpaid leave weeks 
+```{r}
+unpaid = 
+merged_wfls %>% 
+drop_na(family_income) %>% 
+drop_na(unpaid_leave_weeks) %>% 
+mutate(food_insecurity = as.character(food_insecurity), 
+       food_insecurity = case_when(
+         food_insecurity == '0' ~ "no", 
+         food_insecurity == '1' ~ "yes"), 
+       family_income = fct_reorder(family_income, es3)) %>% 
+   ggplot(aes(x = family_income, y = unpaid_leave_weeks, color = food_insecurity)) + 
+  geom_point() + 
+theme(axis.text.x = element_text(angle = 60, vjust = 0.5, hjust = 1)) +
+  labs(
+    title = "Unpaid maternity leave by income",
+    x = "Family Income",
+    y = "Weeks of unpaidleave"
+  )
+
+ggplotly(unpaid)
+
+```
+
+3b) income, food insecurity, and leave weeks 
+
+```{r}
+income = 
+merged_wfls %>% 
+drop_na(family_income) %>% 
+drop_na(leave_weeks) %>% 
+mutate(food_insecurity = as.character(food_insecurity), 
+       food_insecurity = case_when(
+         food_insecurity == '0' ~ "no", 
+         food_insecurity == '1' ~ "yes"), 
+       family_income = fct_reorder(family_income, es3)) %>% 
+   ggplot(aes(x = family_income, y = leave_weeks, color = food_insecurity)) + 
+  geom_point() + 
+theme(axis.text.x = element_text(angle = 60, vjust = 0.5, hjust = 1)) +
+  labs(
+    title = "Paid leave by income",
+    x = "Family Income",
+    y = "Weeks of leave"
+  )
+
+ggplotly(income)
+```
+
+
+4) Factors Affecting Return to work 
+```{r}
+unemploy = 
+merged_wfls %>% 
+  drop_na(unemploy_reason) %>% 
+  ggplot(aes(x = unemploy_reason, fill = race)) + geom_bar(position = "dodge") + 
+  theme(axis.text.x = element_text(angle = 60, vjust = 0.5, hjust = 1)) + 
+  labs(
+    title = "Reasons for Unemployment",
+    x = "Reason",
+    y = "Count") 
+
+ggplotly(unemploy)
+
+
+```
+
+4b return to work by education 
+```{r}
+unemploy2 = 
+merged_wfls %>% 
+  drop_na(unemploy_reason) %>% 
+  ggplot(aes(x = unemploy_reason, fill = education)) + geom_bar(position = "dodge") + 
+  theme(axis.text.x = element_text(angle = 60, vjust = 0.5, hjust = 1)) + 
+  labs(
+    title = "Reasons for Unemployment",
+    x = "Reason",
+    y = "Count") 
+
+ggplotly(unemploy2)
+```
+
+
+
+5) 
+PostPartum checkup and family income
+```{r}
+
+check = 
+merged_wfls %>% 
+  drop_na(postpartum_check) %>% 
+  ggplot(aes(x = postpartum_check, fill = family_income)) + geom_bar(position = "dodge") + 
+  theme(axis.text.x = element_text(angle = 60, vjust = 0.5, hjust = 1)) + 
+  labs(
+    title = "Postpartum Check",
+    x = "Postpartum Check status",
+    y = "Count") 
+
+ggplotly(check)
+
+```
+
+
+6) Neighborhood and leave
+```{r}
+neighborhood = 
+  merged_wfls %>% 
+  drop_na(race) %>% 
+  drop_na(leave_weeks) %>% 
+ mutate(race = fct_reorder(neighborhood, leave_weeks)) %>% 
+  ggplot(aes(x = neighborhood, y = leave_weeks, fill = race)) + 
+    geom_violin() + 
+  theme(axis.text.x = element_text(angle = 60, vjust = 0.5, hjust = 1), legend.position = "none") +
+  labs(
+    title = "Weeks of maternity leave by neighborhood",
+    x = "neighborhood",
+    y = "Weeks of leave"
+  )
+
+ggplotly(neighborhood)
+```
 
 
 

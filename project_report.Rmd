@@ -86,7 +86,7 @@ NYC zipcodes by neighborhood and borough came from the [New York State Departmen
 ### **Data Cleaning**
 
 Read in data, create new variables, and select key variables for analysis
-(test) 
+
 
 ```{r}
 wfls_df = 
@@ -174,8 +174,11 @@ wfls_df =
       es3 == '11' ~ "$60,001 to 85,000",
       es3 == '12' ~ "More than $85,000"
     ),
+      postpartum_check = case_when(
+      pph1 == '1' ~ "yes", 
+      pph1 == '2' ~ "no"), 
     zipcode = fixd2) %>% 
-  select("ph1":"el1", "el9", "el11", "el13a":"el17f", "ih1", "mh4", "es1a": "es3", "SAMP_WEIGHT", "POP_WEIGHT", "leave_type":"pct_unpaid", "partner":"zipcode")
+  select("ph1":"el1", "el9", "el11", "el13a":"el17f", "ih1", "mh4", "es1a": "es3", "SAMP_WEIGHT", "POP_WEIGHT", "leave_type":"pct_unpaid", "partner":"zipcode", "postpartum_check")
 ```
 
 Save cleaned data set
@@ -202,77 +205,28 @@ merged_wfls =
 write.csv(merged_wfls, "./data/merged_wfls.csv")
 ```
 
-Exploratory chart of average length of maternity leave by race / ethnicity 
 
+## Plots 
+1) Maternity Leave by Race 
 ```{r}
-merged_wfls %>% 
+race = 
+  merged_wfls %>% 
   drop_na(race) %>% 
-  group_by(leave_weeks, race) %>%
-  summarize(mean_leave_weeks = mean(leave_weeks)) %>%
-  mutate(race = fct_reorder(race, mean_leave_weeks)) %>%
-  ggplot(aes(x = race, fill = race)) +
-  geom_bar() +
-  theme(axis.text.x = element_text(angle = 60, vjust = 0.5, hjust =1), legend.position = "none") +
+  drop_na(leave_weeks) %>% 
+ mutate(race = fct_reorder(race, leave_weeks)) %>% 
+  ggplot(aes(x = race, y = leave_weeks, fill = race, alpha = 0.9)) + 
+    geom_boxplot() + 
+  theme(axis.text.x = element_text(angle = 60, vjust = 0.5, hjust = 1), legend.position = "none") +
   labs(
-    title = "Average weeks of maternity leave by race",
+    title = "Weeks of maternity leave by race",
     x = "Race",
-    y = "Mean weeks of leave"
+    y = "Weeks of leave"
   )
-```
 
-Exploratory chart of average length of maternity leave by co-parenting status
-
-```{r}
-wfls_df %>% 
-  drop_na(partner) %>% 
-  group_by(leave_weeks, partner) %>%
-  summarize(mean_leave_weeks = mean(leave_weeks)) %>%
-  mutate(race = fct_reorder(partner, mean_leave_weeks)) %>%
-  ggplot(aes(x = partner, fill = partner)) +
-  geom_bar() +
-  theme(axis.text.x = element_text(angle = 60, vjust = 0.5, hjust =1), legend.position = "none") +
-  labs(
-    title = "Average weeks of maternity leave by co-parenting status",
-    x = "",
-    y = "Mean weeks of leave"
-  )
+ggplotly(race)
 ```
 
 
-plot of salary and zip codes, colors by leave type
-
-```{r}
-wfls_df %>%  
-  mutate(
-    es3 = na_if(es3, 77),
-    es3 = na_if(es3, 99),
-    el11 = na_if(el11, 77),
-    el11 = na_if(el11, 99)
-  ) %>% 
-ggplot(aes(x = zipcode, y = es3, color = el11)) +
-  geom_point()
-```
-^ need to transform salary from 1-11 into actual numbers?
-
-
-
-Factors Affecting Return to Work 
-```{r}
-wfls_df %>%
-  plot_ly(x = ~unemploy_reason, color = ~race, type = "histogram", colors = "viridis")
-
-
-wfls_df %>%
-  plot_ly(x = ~unemploy_reason, color = ~education, type = "histogram", colors = "viridis")
-```
-
-
-PostPartum checkup, breast feeding, and leave
-```{r}
-wfls_df %>%
-  plot_ly(x = ~bf1_1, color = ~leave_type, type = "histogram", colors = "viridis")
-
-```
 
 
 

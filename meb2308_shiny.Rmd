@@ -1,0 +1,243 @@
+---
+title: "Maternity Leave in NYC"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    source_code: embed
+    runtime: shiny
+---
+
+```{r, include=FALSE}
+library(tidyverse)
+library(plotly)
+library(flexdashboard)
+library(shiny)
+
+charts_df = 
+  read_csv("./data/merged_wfls.csv") %>% 
+  mutate(
+    mean_leave_weeks = mean(leave_weeks)) %>%
+  drop_na(borough, race, job_type, leave_type, education, partner, family_income)
+```
+
+Weeks of Leave Predictor
+=====================================
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+```{r for_sidebar}
+
+#entries to choose from
+borough_choices = 
+  charts_df %>% 
+  pull(borough) %>%  
+  unique()
+
+type = charts_df %>% 
+  pull(leave_type) %>% unique()
+
+race = charts_df %>% 
+  pull(race) %>% unique()
+
+partner = charts_df %>% 
+  pull(partner) %>% unique()
+
+education = charts_df %>% 
+  pull(education) %>% unique()
+
+employment = charts_df %>% 
+  pull(job_type) %>% unique()
+
+food_insecurity = charts_df %>% 
+  pull(food_insecurity) %>% unique()
+
+family_income = charts_df %>% 
+  pull(family_income) %>% unique()
+
+selectInput(
+  "borough_choice",
+  h3("Borough"),
+  choices = borough_choices,
+  selected = "Manhattan")
+
+radioButtons(
+  "type",
+  h3("Type of Leave"),
+  choices = type)
+  
+selectInput(
+  "family_income",
+  h3("Family Income"),
+  choices = family_income,
+  selected = "Less than $16,000")
+
+radioButtons(
+  "race",
+  h3("Race"),
+  choices = race)
+
+radioButtons(
+  "partner",
+  h3("Co-parenting Status"),
+  choices = partner)
+
+radioButtons(
+  "education",
+  h3("Education"),
+  choices = education)
+
+radioButtons(
+  "employment",
+  h3("Employment Type"),
+  choices = employment)
+
+# rsconnect::deployApp/meb2308_shiny.Rmd"
+```
+
+
+
+Socioeconomic Characteristics
+=====================================
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+```{r for_sidebar_2}
+
+selectInput(
+  "geography",
+  h3("Choose a geography"),
+  choices = list("All of NYC", "Result by borough")
+)
+
+conditionalPanel(
+  condition = "input.geography == 'Result by borough'",
+    selectInput(
+    "borough_choice",
+    h3("Choose a borough"),
+    choices = borough_choices))
+
+selectInput(
+  "choices",
+  h3("Choose first factor"),
+  choices = list("Race", "Employment Type", "Co-parenting Status", "Family Income"))
+
+conditionalPanel(
+  condition = "input.choices == 'Race'",
+  radioButtons(
+  "race",
+  h3("Race"),
+  choices = race))
+
+conditionalPanel(
+  condition = "input.choices == 'Employment Type'",
+  radioButtons(
+  "employment",
+  h3("Employment Type"),
+  choices = employment))
+
+conditionalPanel(
+  condition = "input.choices == 'Co-parenting Status'",
+  radioButtons(
+  "partner",
+  h3("Co-parenting Status"),
+  choices = partner))
+
+conditionalPanel(
+  condition = "input.choices == 'Education'",
+  radioButtons(
+  "education",
+  h3("Education"),
+  choices = education))
+
+conditionalPanel(
+  condition = "input.choices == 'Family Income'",
+  selectInput(
+  "family_income",
+  h3("Family Income"),
+  choices = family_income,
+  selected = "Less than $16,000"))
+```
+
+Column {.tabset}
+-----------------------------------------------------------------------
+
+
+```{r}
+renderPlotly({
+  charts_df %>% 
+  filter(borough == input$borough_choice) %>% 
+  plot_ly(
+    x = ~input$choices, y = ~mean_leave_weeks, color = ~input$choices,
+    type = "bar", colors = "viridis") %>% 
+  layout(
+    title = "Title",
+    x = list(title = "title"),
+    y = list(title = "Mean weeks of paid leave"))
+})
+```
+
+NYC Maps
+===================================== 
+
+```{r for_sidebar_3}
+
+#entries to choose from
+borough_choices = 
+  charts_df %>% 
+  pull(borough) %>%  
+  unique()
+
+selectInput(
+  "borough_choice",
+  h3("Borough"),
+  choices = borough_choices,
+  selected = "Manhattan")
+
+selectInput(
+  "choices",
+  h3("Choose first factor"),
+  choices = list("Race", "Employment Type", "Co-parenting Status", "Family Income"))
+
+conditionalPanel(
+  condition = "input.choices == 'Race'",
+  radioButtons(
+  "race",
+  h3("Race"),
+  choices = race))
+
+conditionalPanel(
+  condition = "input.choices == 'Employment Type'",
+  radioButtons(
+  "employment",
+  h3("Employment Type"),
+  choices = employment))
+
+conditionalPanel(
+  condition = "input.choices == 'Co-parenting Status'",
+  radioButtons(
+  "partner",
+  h3("Co-parenting Status"),
+  choices = partner))
+
+conditionalPanel(
+  condition = "input.choices == 'Education'",
+  radioButtons(
+  "education",
+  h3("Education"),
+  choices = education))
+
+conditionalPanel(
+  condition = "input.choices == 'Family Income'",
+  selectInput(
+  "family_income",
+  h3("Family Income"),
+  choices = family_income,
+  selected = "Less than $16,000"))
+
+# rsconnect::deployApp("./meb2308_shiny.Rmd")
+```
+
+

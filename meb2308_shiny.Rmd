@@ -30,7 +30,7 @@ Column {.sidebar}
 -----------------------------------------------------------------------
 
 ```{r}
-#entries to choose from
+#all entries to choose from for predictor 
 borough_choice = charts_df %>% 
   pull(borough) %>% unique()
 
@@ -87,24 +87,29 @@ Column
 
 ```{r}
 renderPlotly({
+  
+charts_df = 
   charts_df %>% 
   filter(
-    borough %in% input$borough_choice,
-    race %in% input$race,
-    job_type %in% input$employment,
-    partner %in% input$partner,
-    family_income %in% input$family_income,
-    education %in% input$education) %>% 
+    borough == input$borough_choice,
+    race == input$race,
+    job_type == input$employment,
+    partner == input$partner,
+    family_income == input$family_income,
+    education == input$education)
+
+charts_df %>% 
   mutate(
     mean_leave_weeks = mean(leave_weeks)) %>% 
-  group_by(leave_type) %>% 
+  group_by(mean_leave_weeks, leave_type) %>% 
   plot_ly(
     x = ~leave_type, y = ~mean_leave_weeks, color = ~leave_type,
-    type = "bar", colors = "viridis") %>% 
+    type = "box", colors = "viridis") %>% 
   layout(
     title = "Weeks of Leave by Selected Characteristics",
     xaxis = list(title = "Type of Leave"),
     yaxis = list(title = ""))
+
  })
 
 ```
@@ -116,6 +121,7 @@ Column {.sidebar}
 -----------------------------------------------------------------------
 
 ```{r}
+# Choose two options to plot in bar chart format
 
 selectInput(
   "geography",
@@ -219,16 +225,13 @@ Column
 ```{r}
 renderPlotly({
   charts_df %>% 
+  count(mean_leave_weeks) %>% 
   filter(
     borough %in% input$borough_choice
     ) %>% 
   plot_ly(
-    x = ~input$choice_1, y = ~mean_leave_weeks, color = ~input$choice_2,
-    type = "box", colors = "viridis") %>% 
-  layout(
-    title = "Title",
-    x = list(title = "title"),
-    y = list(title = "Mean weeks of paid leave"))
+    x = ~input$choice_1, y = ~n, color = ~input$choice_2,
+    type = "bar", colors = "viridis")
 })
 ```
 

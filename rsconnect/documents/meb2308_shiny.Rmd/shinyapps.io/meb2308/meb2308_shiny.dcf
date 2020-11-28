@@ -4,7 +4,7 @@ username:
 account: meb2308
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
-appId: 3288188
-bundleId: 3917058
+appId: 3316834
+bundleId: 3917134
 url: https://meb2308.shinyapps.io/meb2308_shiny/
-when: 1606598899.00572
+when: 1606600938.20198

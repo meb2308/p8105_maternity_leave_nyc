@@ -13,11 +13,13 @@ library(tidyverse)
 library(plotly)
 library(flexdashboard)
 library(shiny)
+library(rsconnect)
+library (tigris)
+library(rgdal)
+library(leaflet)
 
 charts_df = 
   read_csv("./data/merged_wfls.csv") %>% 
-  mutate(
-    mean_leave_weeks = mean(leave_weeks)) %>%
   drop_na(borough, race, job_type, leave_type, education, partner, family_income)
 ```
 
@@ -27,16 +29,10 @@ Weeks of Leave Predictor
 Column {.sidebar}
 -----------------------------------------------------------------------
 
-```{r for_sidebar}
-
+```{r}
 #entries to choose from
-borough_choices = 
-  charts_df %>% 
-  pull(borough) %>%  
-  unique()
-
-type = charts_df %>% 
-  pull(leave_type) %>% unique()
+borough_choice = charts_df %>% 
+  pull(borough) %>% unique()
 
 race = charts_df %>% 
   pull(race) %>% unique()
@@ -50,22 +46,14 @@ education = charts_df %>%
 employment = charts_df %>% 
   pull(job_type) %>% unique()
 
-food_insecurity = charts_df %>% 
-  pull(food_insecurity) %>% unique()
-
 family_income = charts_df %>% 
   pull(family_income) %>% unique()
 
 selectInput(
   "borough_choice",
   h3("Borough"),
-  choices = borough_choices,
+  choices = borough_choice,
   selected = "Manhattan")
-
-radioButtons(
-  "type",
-  h3("Type of Leave"),
-  choices = type)
   
 selectInput(
   "family_income",
@@ -92,11 +80,34 @@ radioButtons(
   "employment",
   h3("Employment Type"),
   choices = employment)
-
-# rsconnect::deployApp/meb2308_shiny.Rmd"
 ```
 
+Column 
+-----------------------------------------------------------------------
 
+```{r}
+renderPlotly({
+  charts_df %>% 
+  filter(
+    borough %in% input$borough_choice,
+    race %in% input$race,
+    job_type %in% input$employment,
+    partner %in% input$partner,
+    family_income %in% input$family_income,
+    education %in% input$education) %>% 
+  mutate(
+    mean_leave_weeks = mean(leave_weeks)) %>% 
+  group_by(leave_type) %>% 
+  plot_ly(
+    x = ~leave_type, y = ~mean_leave_weeks, color = ~leave_type,
+    type = "bar", colors = "viridis") %>% 
+  layout(
+    title = "Weeks of Leave by Selected Characteristics",
+    xaxis = list(title = "Type of Leave"),
+    yaxis = list(title = ""))
+ })
+
+```
 
 Socioeconomic Characteristics
 =====================================
@@ -104,7 +115,7 @@ Socioeconomic Characteristics
 Column {.sidebar}
 -----------------------------------------------------------------------
 
-```{r for_sidebar_2}
+```{r}
 
 selectInput(
   "geography",
@@ -117,43 +128,84 @@ conditionalPanel(
     selectInput(
     "borough_choice",
     h3("Choose a borough"),
-    choices = borough_choices))
+    choices = borough_choice))
 
 selectInput(
-  "choices",
-  h3("Choose first factor"),
+  "choice_1",
+  h3("Choose first characteristic"),
   choices = list("Race", "Employment Type", "Co-parenting Status", "Family Income"))
 
 conditionalPanel(
-  condition = "input.choices == 'Race'",
+  condition = "input.choice_1 == 'Race'",
   radioButtons(
   "race",
   h3("Race"),
   choices = race))
 
 conditionalPanel(
-  condition = "input.choices == 'Employment Type'",
+  condition = "input.choice_1 == 'Employment Type'",
   radioButtons(
   "employment",
   h3("Employment Type"),
   choices = employment))
 
 conditionalPanel(
-  condition = "input.choices == 'Co-parenting Status'",
+  condition = "input.choice_1 == 'Co-parenting Status'",
   radioButtons(
   "partner",
   h3("Co-parenting Status"),
   choices = partner))
 
 conditionalPanel(
-  condition = "input.choices == 'Education'",
+  condition = "input.choice_1 == 'Education'",
   radioButtons(
   "education",
   h3("Education"),
   choices = education))
 
 conditionalPanel(
-  condition = "input.choices == 'Family Income'",
+  condition = "input.choice_1 == 'Family Income'",
+  selectInput(
+  "family_income",
+  h3("Family Income"),
+  choices = family_income,
+  selected = "Less than $16,000"))
+
+selectInput(
+  "choice_2",
+  h3("Choose second characteristic"),
+  choices = list("Race", "Employment Type", "Co-parenting Status", "Family Income"))
+
+conditionalPanel(
+  condition = "input.choice_2 == 'Race'",
+  radioButtons(
+  "race",
+  h3("Race"),
+  choices = race))
+
+conditionalPanel(
+  condition = "input.choice_2 == 'Employment Type'",
+  radioButtons(
+  "employment",
+  h3("Employment Type"),
+  choices = employment))
+
+conditionalPanel(
+  condition = "input.choice_2 == 'Co-parenting Status'",
+  radioButtons(
+  "partner",
+  h3("Co-parenting Status"),
+  choices = partner))
+
+conditionalPanel(
+  condition = "input.choice_2 == 'Education'",
+  radioButtons(
+  "education",
+  h3("Education"),
+  choices = education))
+
+conditionalPanel(
+  condition = "input.choice_2 == 'Family Income'",
   selectInput(
   "family_income",
   h3("Family Income"),
@@ -161,17 +213,18 @@ conditionalPanel(
   selected = "Less than $16,000"))
 ```
 
-Column {.tabset}
+Column
 -----------------------------------------------------------------------
-
 
 ```{r}
 renderPlotly({
   charts_df %>% 
-  filter(borough == input$borough_choice) %>% 
+  filter(
+    borough %in% input$borough_choice
+    ) %>% 
   plot_ly(
-    x = ~input$choices, y = ~mean_leave_weeks, color = ~input$choices,
-    type = "bar", colors = "viridis") %>% 
+    x = ~input$choice_1, y = ~mean_leave_weeks, color = ~input$choice_2,
+    type = "box", colors = "viridis") %>% 
   layout(
     title = "Title",
     x = list(title = "title"),
@@ -182,7 +235,10 @@ renderPlotly({
 NYC Maps
 ===================================== 
 
-```{r for_sidebar_3}
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+```{r}
 
 #entries to choose from
 borough_choices = 
@@ -198,7 +254,7 @@ selectInput(
 
 selectInput(
   "choices",
-  h3("Choose first factor"),
+  h3("Choose a characteristic"),
   choices = list("Race", "Employment Type", "Co-parenting Status", "Family Income"))
 
 conditionalPanel(
@@ -239,5 +295,8 @@ conditionalPanel(
 
 # rsconnect::deployApp("./meb2308_shiny.Rmd")
 ```
+
+Column
+----------------------------------------------------------------------
 
 

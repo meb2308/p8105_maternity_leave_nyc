@@ -1,0 +1,42 @@
+---
+title: "Testing Map Functions Outside of Shiny"
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    code_folding: hide
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, include=FALSE}
+library(tidyverse)
+library(plotly)
+library(flexdashboard)
+library(shiny)
+library(rsconnect)
+library (tigris)
+library(rgdal)
+library(dplyr)
+library(leaflet)
+library(sp)
+library(broom)
+library(httr)
+
+charts_df = 
+  read_csv("./data/merged_wfls.csv") %>% 
+  mutate(
+    mean_leave_weeks = mean(leave_weeks))
+```
+
+```{r}
+nyc_neighborhoods = readOGR('http://data.beta.nyc//dataset/0ff93d2d-90ba-457c-9f7e-39e47bf2ac5f/resource/35dd04fb-81b3-479b-a074-a27a37888ce7/download/d085e2f8d0b54d4590b1e7d1f35594c1pediacitiesnycneighborhoods.geojson', encoding = 'OGRFEOJSON', verbose = FALSE)
+
+```
+
+```{r}
+leaflet(nyc_neighborhoods) %>% 
+  addPolygons(popup = ~neighborhood) %>% 
+  addProviderTiles("CartoDB.Positron")
+```
+

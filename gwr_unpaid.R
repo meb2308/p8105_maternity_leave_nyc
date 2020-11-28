@@ -40,7 +40,8 @@ unpaid_data <- as.data.frame(unpaid_poly)
 head(unpaid_data)
 
 ###Run the morans I test.
- 
+moran.test(unpaid_poly$swksunpaid, listw=unpaid_nbq_w, na.action = na.omit, zero.policy = TRUE)
+
 #******SPATIAL REGRESSION ***********************
 
 ###Test baseline linear model.

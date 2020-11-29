@@ -253,7 +253,7 @@ parent =
   merged_wfls %>% 
   drop_na(partner) %>% 
   drop_na(leave_weeks) %>%
- ggplot(aes(x = partner, y = leave_weeks, fill = partner)) +
+ ggplot(aes(x = partner, y = leave_weeks, fill = partner, alpha = 0.9)) +
   geom_boxplot() +
   labs(
     title = "Weeks of maternity leave by co-parenting status",
@@ -318,7 +318,7 @@ ggplotly(income)
 unemploy = 
 merged_wfls %>% 
   drop_na(unemploy_reason) %>% 
-  ggplot(aes(x = unemploy_reason, fill = race)) + geom_bar(position = "dodge") + 
+  ggplot(aes(y = unemploy_reason, fill = race)) + geom_bar(position = "dodge") + 
   theme(axis.text.x = element_text(angle = 60, vjust = 0.5, hjust = 1)) + 
   labs(
     title = "Reasons for Unemployment",
@@ -335,12 +335,12 @@ ggplotly(unemploy)
 unemploy2 = 
 merged_wfls %>% 
   drop_na(unemploy_reason) %>% 
-  ggplot(aes(x = unemploy_reason, fill = education)) + geom_bar(position = "dodge") + 
+  ggplot(aes(y = unemploy_reason, fill = education)) + geom_bar(position = "dodge") + 
   theme(axis.text.x = element_text(angle = 60, vjust = 0.5, hjust = 1)) + 
   labs(
     title = "Reasons for Unemployment",
-    x = "Reason",
-    y = "Count") 
+    x = "Count",
+    y = "Reason") 
 
 ggplotly(unemploy2)
 ```
@@ -353,6 +353,7 @@ PostPartum checkup and family income
 
 check = 
 merged_wfls %>% 
+  drop_na(family_income) %>% 
   drop_na(postpartum_check) %>% 
   ggplot(aes(x = postpartum_check, fill = family_income)) + geom_bar(position = "dodge") + 
   theme(axis.text.x = element_text(angle = 60, vjust = 0.5, hjust = 1)) + 
@@ -363,24 +364,46 @@ merged_wfls %>%
 
 ggplotly(check)
 
+
+```
+
+```{r}
 check = 
 merged_wfls %>% 
   drop_na(family_income) %>% 
   drop_na(postpartum_check) %>% 
-  group_by(family_income, postpartum_check) %>% 
-  summarize(
-    total = n()), 
-    yes = sum(postpartum_check == "TRUE"), 
- 
+  ggplot(aes(x = family_income, fill = postpartum_check)) + geom_bar(position = "stack") + 
+  theme(axis.text.x = element_text(angle = 60, vjust = 0.5, hjust = 1)) + 
+  labs(
+    title = "Postpartum Checkup Status by Income",
+    x = "Family Income",
+    y = "Count", 
+    fill = "Checkup Status") 
 
-
-
-
+ggplotly(check)
 ```
 
-6) Job Type 
-```{r}
+note: made proportion but looked like last hw and wasn't exciting b/c all well over .9
 
+6) Job Type and Unpaid leave weeks
+```{r}
+job_type = 
+  merged_wfls %>%  
+  drop_na(job_type) %>% 
+  drop_na(unpaid_leave_weeks) %>% 
+  ggplot(aes(x = job_type, y = unpaid_leave_weeks, fill = job_type, alpha = 0.9)) + 
+  geom_boxplot() + 
+  ylim(0, 50) + 
+  labs(
+    title = "Leave Weeks by Job Type",
+    x = "Job type",
+    y = "Unpaid Leave Weeks") + 
+  theme(legend.position = "none")
+
+
+
+
+ggplotly(job_type)
 ```
 
 

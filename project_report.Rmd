@@ -175,8 +175,9 @@ wfls_df =
       es3 == '12' ~ "More than $85,000"
     ),
       postpartum_check = case_when(
-      pph1 == '1' ~ "yes", 
-      pph1 == '2' ~ "no"), 
+      pph1 == '1' ~ "TRUE", 
+      pph1 == '2' ~ "FLASE"), 
+   postpartum_check =  as.logical(postpartum_check), 
     mean_leave_weeks = mean(leave_weeks),
     zipcode = fixd2) %>% 
   select("ph1":"el1", "el9", "el11", "el13a":"el17f", "ih1", "mh4", "es1a":"es3", "SAMP_WEIGHT", "POP_WEIGHT", "leave_type":"pct_unpaid", "partner":"zipcode", "postpartum_check")
@@ -363,29 +364,40 @@ merged_wfls %>%
 
 ggplotly(check)
 
+check = 
+merged_wfls %>% 
+  drop_na(family_income) %>% 
+  drop_na(postpartum_check) %>% 
+  mutate(postpartum_check = as.logical(postpartum_check)) 
+
+
+  group_by(family_income, postpartum_check) %>% 
+  summarize(
+    total = sum(postpartum_check == "yes", "no"),  
+    yes = (sum(postpartum_check == "yes")), 
+    prop = (yes/total))
+
+
+  
+  
+summarize(
+    total_decision = n(), 
+    total_reject = sum(decision == "rejected"),
+    prop_reject = (total_reject/total_decision))
+
+
+summarize(
+    total_decision = n(), 
+    total_reject = sum(decision == "rejected"),
+    prop_reject = (total_reject/total_decision))
+
+
 ```
 
-
-6) Neighborhood and leave
+6) Job Type 
 ```{r}
-neighborhood = 
-  merged_wfls %>% 
-  drop_na(race) %>% 
-  drop_na(leave_weeks) %>% 
- mutate(race = fct_reorder(neighborhood, leave_weeks)) %>% 
-  ggplot(aes(x = neighborhood, y = leave_weeks, fill = race)) + 
-    geom_violin() + 
-  theme(axis.text.x = element_text(angle = 60, vjust = 0.5, hjust = 1), legend.position = "none") +
-  labs(
-    title = "Weeks of maternity leave by neighborhood",
-    x = "neighborhood",
-    y = "Weeks of leave"
-  )
 
-ggplotly(neighborhood)
 ```
-
-
 
 
 ## NYC Health Report and Related Work

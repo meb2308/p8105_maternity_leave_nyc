@@ -18,12 +18,18 @@ library (tigris)
 library(rgdal)
 library(leaflet)
 
+#create general data frame for plots
 charts_df = 
-  read_csv("./data/merged_wfls.csv") %>% 
-  drop_na(borough, race, job_type, leave_type, education, partner, family_income)
+  read_csv("./data/merged_wfls.csv")
+
+#create data frame with NAs removed
+charts_df_2 = 
+    read_csv("./data/merged_wfls.csv") %>% 
+    mutate(mean_leave_weeks = mean(leave_weeks)) %>% 
+    drop_na(borough, race, job_type, leave_type, education, partner, family_income)
 ```
 
-Weeks of Leave Predictor
+By Neighborhood
 =====================================
 
 Column {.sidebar}
@@ -31,82 +37,59 @@ Column {.sidebar}
 
 ```{r}
 #all entries to choose from for predictor 
+
 borough_choice = charts_df %>% 
   pull(borough) %>% unique()
 
-race = charts_df %>% 
-  pull(race) %>% unique()
-
-partner = charts_df %>% 
-  pull(partner) %>% unique()
-
-education = charts_df %>% 
-  pull(education) %>% unique()
-
-employment = charts_df %>% 
-  pull(job_type) %>% unique()
-
-family_income = charts_df %>% 
-  pull(family_income) %>% unique()
+neighborhood = charts_df %>% 
+  pull(neighborhood) %>% unique()
 
 selectInput(
-  "borough_choice",
-  h3("Borough"),
-  choices = borough_choice,
-  selected = "Manhattan")
-  
-selectInput(
-  "family_income",
-  h3("Family Income"),
-  choices = family_income,
-  selected = "Less than $16,000")
+  "geography",
+  h3("Choose a geography"),
+  choices = list("All of NYC", "Result by borough", "Result by neighborhood"))
 
-radioButtons(
-  "race",
-  h3("Race"),
-  choices = race)
+conditionalPanel(
+  condition = "input.geography != 'All of NYC'",
+    selectInput(
+    "borough_choice",
+    h3("Choose a borough"),
+    choices = borough_choice))
 
-radioButtons(
-  "partner",
-  h3("Co-parenting Status"),
-  choices = partner)
+rt<-reactive({
+  charts_df %>%
+  filter(borough == input$borough)
+})
 
-radioButtons(
-  "education",
-  h3("Education"),
-  choices = education)
-
-radioButtons(
-  "employment",
-  h3("Employment Type"),
-  choices = employment)
+conditionalPanel(
+  condition = "input.geography == 'Result by neighborhood'",
+  selectInput(
+    "neighborhood",
+    h3("Choose a neighborhood"),
+    choices = neighborhood))
 ```
 
 Column 
 -----------------------------------------------------------------------
 
 ```{r}
+renderText({
+  input[["borough_choice"]]
+})
+
 renderPlotly({
   
-charts_df = 
+filtered_df <- 
   charts_df %>% 
   filter(
-    borough == input$borough_choice,
-    race == input$race,
-    job_type == input$employment,
-    partner == input$partner,
-    family_income == input$family_income,
-    education == input$education)
-
-charts_df %>% 
-  mutate(
-    mean_leave_weeks = mean(leave_weeks)) %>% 
-  group_by(mean_leave_weeks, leave_type) %>% 
+    borough == input$borough_choice
+    ) %>% 
+  group_by(leave_type) %>% 
   plot_ly(
-    x = ~leave_type, y = ~mean_leave_weeks, color = ~leave_type,
-    type = "box", colors = "viridis") %>% 
+    x = ~leave_type, y = ~leave_weeks, color = ~neighborhood,
+    type = "box", colors = "viridis") %>%
   layout(
-    title = "Weeks of Leave by Selected Characteristics",
+    title = "Weeks of Maternity Leave",
     xaxis = list(title = "Type of Leave"),
     yaxis = list(title = ""))
 
@@ -114,31 +97,34 @@ charts_df %>%
 
 ```
 
-Socioeconomic Characteristics
+By Key Socio-Demographics
 =====================================
 
 Column {.sidebar}
 -----------------------------------------------------------------------
 
 ```{r}
+
+race = charts_df_2 %>% 
+  pull(race) %>% unique()
+
+partner = charts_df_2 %>% 
+  pull(partner) %>% unique()
+
+education = charts_df_2 %>% 
+  pull(education) %>% unique()
+
+employment = charts_df_2 %>% 
+  pull(job_type) %>% unique()
+
+family_income = charts_df_2 %>% 
+  pull(family_income) %>% unique()
+
 # Choose two options to plot in bar chart format
 
 selectInput(
-  "geography",
-  h3("Choose a geography"),
-  choices = list("All of NYC", "Result by borough")
-)
-
-conditionalPanel(
-  condition = "input.geography == 'Result by borough'",
-    selectInput(
-    "borough_choice",
-    h3("Choose a borough"),
-    choices = borough_choice))
-
-selectInput(
   "choice_1",
-  h3("Choose first characteristic"),
+  h3("Choose x-axis variable"),
   choices = list("Race", "Employment Type", "Co-parenting Status", "Family Income"))
 
 conditionalPanel(
@@ -179,7 +165,7 @@ conditionalPanel(
 
 selectInput(
   "choice_2",
-  h3("Choose second characteristic"),
+  h3("Choose color group variable"),
   choices = list("Race", "Employment Type", "Co-parenting Status", "Family Income"))
 
 conditionalPanel(
@@ -224,13 +210,13 @@ Column
 
 ```{r}
 renderPlotly({
+plots <-
   charts_df %>% 
-  count(mean_leave_weeks) %>% 
   filter(
-    borough %in% input$borough_choice
-    ) %>% 
+    borough == input$borough_choice) %>%
+  group_by(input$choice_1, input$choice_2) %>% 
   plot_ly(
-    x = ~input$choice_1, y = ~n, color = ~input$choice_2,
+    x = ~input$choice_1, y = ~mean_leave_weeks, color = ~input$choice_2,
     type = "bar", colors = "viridis")
 })
 ```
@@ -257,7 +243,7 @@ selectInput(
 
 selectInput(
   "choices",
-  h3("Choose a characteristic"),
+  h3("Choose a characteristic to map"),
   choices = list("Race", "Employment Type", "Co-parenting Status", "Family Income"))
 
 conditionalPanel(

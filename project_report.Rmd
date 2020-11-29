@@ -406,4 +406,5 @@ ggplotly(job_type)
 
 This visualization shows that mothers who were self-employed were slightly more likely to have longer unpaid leave weeks. However, these values did not value substantially across groups. 
 
+
 ## NYC Health Report and Related Work

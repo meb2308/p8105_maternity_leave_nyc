@@ -77,7 +77,7 @@ NYC zipcodes by neighborhood and borough came from the [New York State Departmen
 
  * `neighborhood` = neighborhood (based on five digit zip code)
  * `race` = race of survey respondent
- * `income` = family income as percent of the federal poverty level
+ * `family_income` = family income as percent of the federal poverty level
  * `food_insecurity` = concern about having enough food to feed family or receives public assistance in the form of SNAP benefits / food stamps
  * `education` = highest grade or year of school completed
  * `partner` = co-parenting status (single or co-parent)
@@ -179,7 +179,7 @@ wfls_df =
       pph1 == '2' ~ "no"), 
     mean_leave_weeks = mean(leave_weeks),
     zipcode = fixd2) %>% 
-  select("ph1":"el1", "el9", "el11", "el13a":"el17f", "ih1", "mh4", "es1a": "es3", "SAMP_WEIGHT", "POP_WEIGHT", "leave_type":"pct_unpaid", "partner":"zipcode", "postpartum_check")
+  select("ph1":"el1", "el9", "el11", "el13a":"el17f", "ih1", "mh4", "es1a":"es3", "SAMP_WEIGHT", "POP_WEIGHT", "leave_type":"pct_unpaid", "partner":"zipcode", "postpartum_check")
 ```
 
 Save cleaned data set

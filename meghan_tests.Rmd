@@ -22,11 +22,6 @@ library(leaflet)
 library(sp)
 library(broom)
 library(httr)
-
-charts_df = 
-  read_csv("./data/merged_wfls.csv") %>% 
-  mutate(
-    mean_leave_weeks = mean(leave_weeks))
 ```
 
 ```{r}
@@ -35,8 +30,17 @@ nyc_neighborhoods = readOGR('http://data.beta.nyc//dataset/0ff93d2d-90ba-457c-9f
 ```
 
 ```{r}
-leaflet(nyc_neighborhoods) %>% 
-  addPolygons(popup = ~neighborhood) %>% 
-  addProviderTiles("CartoDB.Positron")
+merge_map = 
+  sp::merge(nyc_neighborhoods, charts_df, by = 'neighborhood', duplicateGeoms = TRUE)
 ```
 
+
+```{r}
+leaflet(merge_map) %>% 
+  addPolygons(
+    popup = (~neighborhood),
+    fillOpacity = 0.2, weight = 2, 
+    highlightOptions = highlightOptions(color = "#03F", weight = 5, bringToFront = TRUE)
+    ) %>% 
+  addProviderTiles("CartoDB.Positron")
+```

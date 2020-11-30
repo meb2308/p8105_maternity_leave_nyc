@@ -105,7 +105,7 @@ wfls_df =
     ulw_recode = case_when(
       leave_type == "Unpaid" ~ leave_weeks),
     unpaid_leave_weeks = coalesce(ulw_recode, el13d),
-    pct_unpaid = round((unpaid_leave_weeks/leave_weeks)*100),4,
+    pct_unpaid = round((unpaid_leave_weeks/leave_weeks)*100),
     partner = case_when(
       cp1 == '1' ~ "Co-parent",
       cp1 == '2' ~ "Single Parent"),
@@ -192,24 +192,30 @@ wfls_df %>%
     mean_leave_weeks = mean(leave_weeks),
     zipcode = fixd2) %>% 
 <<<<<<< HEAD
+<<<<<<< HEAD
   select("ph1":"el1", "el9", "el11", "el13a":"el17f", "ih1", "mh4", "es1a": "es3", "SAMP_WEIGHT", "POP_WEIGHT", "leave_type":"pct_unpaid", "partner":"zipcode", "postpartum_check")
 >>>>>>> a60ebee7de012fb6be432d484c504afe791c4e18
 =======
   select("ph1":"el1", "el9", "el11", "el13a":"el17f", "ih1", "mh4", "es1a":"es3", "SAMP_WEIGHT", "POP_WEIGHT", "leave_type":"pct_unpaid", "partner":"zipcode", "postpartum_check")
 >>>>>>> b9d51c788c1088b20341275db7eb2966c9c8b91a
+=======
+  select("es3", "SAMP_WEIGHT", "POP_WEIGHT", "leave_type":"zipcode")
+>>>>>>> 432ce1668a71955c371d0347a8d0ec13793d47e9
 ```
 
-Save cleaned data set
+Save cleaned data set and merge with NYC zipcodes data
 
 ```{r}
 write.csv(wfls_df, "./data/cleaned_wfls.csv")
+<<<<<<< HEAD
 ```
 
 <<<<<<< HEAD
 =======
 Merge data sets
+=======
+>>>>>>> 432ce1668a71955c371d0347a8d0ec13793d47e9
 
-```{r}
 cleaned_wfls = 
   read_csv("./data/cleaned_wfls.csv")
 
@@ -219,14 +225,10 @@ zipcodes =
 
 merged_wfls = 
   left_join(cleaned_wfls, zipcodes, by = "zipcode")
-```
 
-```{r}
 write.csv(merged_wfls, "./data/merged_wfls.csv")
 ```
 >>>>>>> 1de40c58f471087ae23d12234bc3df92b6dc5842
-
-
 
 ## Exploratory Anlaysis  
 

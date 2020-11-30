@@ -1,0 +1,68 @@
+---
+title: "leaflet"
+output: html_document
+---
+```{r, include=FALSE}
+library(tidyverse)
+library(plotly)
+library(flexdashboard)
+library(shiny)
+library(rsconnect)
+library (tigris)
+library(rgdal)
+library(leaflet)
+library(rsconnect)
+
+#create general data frame for plots
+charts_df = 
+  read_csv("./data/merged_wfls.csv")
+
+#create data frame with NAs removed
+charts_df_2 = 
+    read_csv("./data/merged_wfls.csv") %>% 
+    mutate(mean_leave_weeks = mean(leave_weeks)) %>% 
+    drop_na(borough, race, job_type, leave_type, education, partner, family_income)
+```
+
+creating polygon map
+```{r}
+zips = readOGR("./map/nyc_only_zip.shp", layer = "nyc_only_zip")
+
+basemap = 
+leaflet(zips) %>% 
+    addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+    highlightOptions = highlightOptions(color = "white", weight = 2,
+      bringToFront = TRUE,
+      fillColor = ~colorQuantile("YlOrRd", leaveweeks)(leaveweeks))) %>% 
+  addProviderTiles(providers$CartoDB.Positron)
+```
+
+adding colors
+```{r}
+leavewkspal <- colorNumeric(
+  palette = "viridis",
+  domain = as.numeric(zips$leaveweeks))
+
+wksunpaidpal <- colorNumeric(
+  palette = "viridis",
+  domain = as.numeric(zips$wksunpaid))
+
+lvtypepal <- colorFactor(topo.colors(5), zips$leavetype)
+
+parentpal <- colorFactor(topo.colors(5), zips$parenttype)
+
+edpal <- colorFactor(topo.colors(5), zips$edtype)
+
+racepal <- colorFactor(topo.colors(5), zips$race)
+
+jobtypepal <- colorFactor(topo.colors(5), zips$jobtypefix)
+```
+
+alter maps
+```{r}
+charts_df_2 %>% 
+  sample_n(100) %>% 
+  leaflet(basemap)
+  
+```
+

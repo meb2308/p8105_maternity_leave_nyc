@@ -22,6 +22,7 @@ library(leaflet)
 charts_df = 
   read_csv("./data/merged_wfls.csv")
 
+
 #create data frame with NAs removed
 charts_df_2 = 
     read_csv("./data/merged_wfls.csv") %>% 
@@ -41,13 +42,10 @@ Column {.sidebar}
 borough_choice = charts_df %>% 
   pull(borough) %>% unique()
 
-neighborhood = charts_df %>% 
-  pull(neighborhood) %>% unique()
-
 selectInput(
   "geography",
   h3("Choose a geography"),
-  choices = list("All of NYC", "Result by borough", "Result by neighborhood"))
+  choices = list("All of NYC", "Result by borough"))
 
 conditionalPanel(
   condition = "input.geography != 'All of NYC'",
@@ -56,17 +54,7 @@ conditionalPanel(
     h3("Choose a borough"),
     choices = borough_choice))
 
-rt<-reactive({
-  charts_df %>%
-  filter(borough == input$borough)
-})
 
-conditionalPanel(
-  condition = "input.geography == 'Result by neighborhood'",
-  selectInput(
-    "neighborhood",
-    h3("Choose a neighborhood"),
-    choices = neighborhood))
 ```
 
 Column 
@@ -85,10 +73,14 @@ filtered_df <-
     borough == input$borough_choice
     ) %>% 
   group_by(leave_type) %>% 
+  mutate(
+    leave_type = factor(leave_type, levels=c("Paid", "Unpaid", "Both")),
+    ) %>% 
   plot_ly(
     x = ~leave_type, y = ~leave_weeks, color = ~neighborhood,
     type = "box", colors = "viridis") %>%
   layout(
+    boxmode = "group",
     title = "Weeks of Maternity Leave",
     xaxis = list(title = "Type of Leave"),
     yaxis = list(title = ""))
@@ -104,6 +96,8 @@ Column {.sidebar}
 -----------------------------------------------------------------------
 
 ```{r}
+
+rt <- reactive({
 
 race = charts_df_2 %>% 
   pull(race) %>% unique()
@@ -121,6 +115,156 @@ family_income = charts_df_2 %>%
   pull(family_income) %>% unique()
 
 # Choose two options to plot in bar chart format
+
+selectInput(
+  "choice_1",
+  h3("Choose x-axis variable"),
+  choices = list("Race", "Employment Type", "Co-parenting Status", "Family Income"))
+
+conditionalPanel(
+  condition = "input.choice_1 == 'Race'",
+  checkboxInput(
+  "race",
+  h3("Race"),
+  choices = race,
+  selected = "White", "Black/African American", "Asian", "Native Hawaiian/OPI", "American Indian/AN", "Other", "Hispanic", "Multiple"))
+
+conditionalPanel(
+  condition = "input.choice_1 == 'Employment Type'",
+  checkboxInput(
+  "employment",
+  h3("Employment Type"),
+  choices = employment,
+  selected = "Private", "Government", "Non-profit", "Self-employed"))
+
+conditionalPanel(
+  condition = "input.choice_1 == 'Co-parenting Status'",
+  checkboxInput(
+  "partner",
+  h3("Co-parenting Status"),
+  choices = partner,
+  selected = "Single Parent", "Co-parent"))
+
+conditionalPanel(
+  condition = "input.choice_1 == 'Education'",
+  checkboxInput(
+  "education",
+  h3("Education"),
+  choices = education))
+
+conditionalPanel(
+  condition = "input.choice_1 == 'Family Income'",
+  checkboxInput(
+  "family_income",
+  h3("Family Income"),
+  choices = family_income,
+  selected = "Less than $16,000"))
+
+selectInput(
+  "choice_2",
+  h3("Choose color group variable"),
+  choices = list("Race", "Employment Type", "Co-parenting Status", "Family Income"))
+
+conditionalPanel(
+  condition = "input.choice_2 == 'Race'",
+  checkboxInput(
+  "race",
+  h3("Race"),
+  choices = race))
+
+conditionalPanel(
+  condition = "input.choice_2 == 'Employment Type'",
+  checkboxInput(
+  "employment",
+  h3("Employment Type"),
+  choices = employment))
+
+conditionalPanel(
+  condition = "input.choice_2 == 'Co-parenting Status'",
+  checkboxInput(
+  "partner",
+  h3("Co-parenting Status"),
+  choices = partner))
+
+conditionalPanel(
+  condition = "input.choice_2 == 'Education'",
+  checkboxInput(
+  "education",
+  h3("Education"),
+  choices = education))
+
+conditionalPanel(
+  condition = "input.choice_2 == 'Family Income'",
+  checkboxInput(
+  "family_income",
+  h3("Family Income"),
+  choices = family_income,
+  selected = "Less than $16,000"))
+
+actionButton("goButton", "Plot!")
+
+})
+```
+
+Column
+-----------------------------------------------------------------------
+
+```{r}
+renderPlotly({
+plots <-
+  charts_df %>%
+  group_by(input$choice_1, input$choice_2) %>% 
+  plot_ly(
+    x = ~input$choice_1, y = ~leave_weeks, color = ~input$choice_2,
+    type = "box", colors = "viridis") %>% 
+  layout(
+    title = paste("Weeks of Maternity Leave by", input$choice_1, "and", input$choice_2),
+    xaxis = list(title = "input$choice_1"),
+    yaxis = list(title = ""))
+})
+```
+
+NYC Maps
+===================================== 
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+```{r}
+
+rt <- reactive({
+  
+borough_choice = charts_df %>% 
+  pull(borough) %>% unique()
+  
+race = charts_df_2 %>% 
+  pull(race) %>% unique()
+
+partner = charts_df_2 %>% 
+  pull(partner) %>% unique()
+
+education = charts_df_2 %>% 
+  pull(education) %>% unique()
+
+employment = charts_df_2 %>% 
+  pull(job_type) %>% unique()
+
+family_income = charts_df_2 %>% 
+  pull(family_income) %>% unique()
+
+# Choose one option for map in addition to Borough
+
+selectInput(
+  "geography",
+  h3("Choose a geography"),
+  choices = list("All of NYC", "Result by borough"))
+
+conditionalPanel(
+  condition = "input.geography != 'All of NYC'",
+    selectInput(
+    "borough_choice",
+    h3("Choose a borough"),
+    choices = borough_choice))
 
 selectInput(
   "choice_1",
@@ -163,124 +307,9 @@ conditionalPanel(
   choices = family_income,
   selected = "Less than $16,000"))
 
-selectInput(
-  "choice_2",
-  h3("Choose color group variable"),
-  choices = list("Race", "Employment Type", "Co-parenting Status", "Family Income"))
+actionButton("goButton", "Map!")
 
-conditionalPanel(
-  condition = "input.choice_2 == 'Race'",
-  radioButtons(
-  "race",
-  h3("Race"),
-  choices = race))
-
-conditionalPanel(
-  condition = "input.choice_2 == 'Employment Type'",
-  radioButtons(
-  "employment",
-  h3("Employment Type"),
-  choices = employment))
-
-conditionalPanel(
-  condition = "input.choice_2 == 'Co-parenting Status'",
-  radioButtons(
-  "partner",
-  h3("Co-parenting Status"),
-  choices = partner))
-
-conditionalPanel(
-  condition = "input.choice_2 == 'Education'",
-  radioButtons(
-  "education",
-  h3("Education"),
-  choices = education))
-
-conditionalPanel(
-  condition = "input.choice_2 == 'Family Income'",
-  selectInput(
-  "family_income",
-  h3("Family Income"),
-  choices = family_income,
-  selected = "Less than $16,000"))
-```
-
-Column
------------------------------------------------------------------------
-
-```{r}
-renderPlotly({
-plots <-
-  charts_df %>% 
-  filter(
-    borough == input$borough_choice) %>%
-  group_by(input$choice_1, input$choice_2) %>% 
-  plot_ly(
-    x = ~input$choice_1, y = ~mean_leave_weeks, color = ~input$choice_2,
-    type = "bar", colors = "viridis")
 })
-```
-
-NYC Maps
-===================================== 
-
-Column {.sidebar}
------------------------------------------------------------------------
-
-```{r}
-
-#entries to choose from
-borough_choices = 
-  charts_df %>% 
-  pull(borough) %>%  
-  unique()
-
-selectInput(
-  "borough_choice",
-  h3("Borough"),
-  choices = borough_choices,
-  selected = "Manhattan")
-
-selectInput(
-  "choices",
-  h3("Choose a characteristic to map"),
-  choices = list("Race", "Employment Type", "Co-parenting Status", "Family Income"))
-
-conditionalPanel(
-  condition = "input.choices == 'Race'",
-  radioButtons(
-  "race",
-  h3("Race"),
-  choices = race))
-
-conditionalPanel(
-  condition = "input.choices == 'Employment Type'",
-  radioButtons(
-  "employment",
-  h3("Employment Type"),
-  choices = employment))
-
-conditionalPanel(
-  condition = "input.choices == 'Co-parenting Status'",
-  radioButtons(
-  "partner",
-  h3("Co-parenting Status"),
-  choices = partner))
-
-conditionalPanel(
-  condition = "input.choices == 'Education'",
-  radioButtons(
-  "education",
-  h3("Education"),
-  choices = education))
-
-conditionalPanel(
-  condition = "input.choices == 'Family Income'",
-  selectInput(
-  "family_income",
-  h3("Family Income"),
-  choices = family_income,
-  selected = "Less than $16,000"))
 
 # rsconnect::deployApp("./meb2308_shiny.Rmd")
 ```

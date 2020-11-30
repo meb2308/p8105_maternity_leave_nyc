@@ -13,56 +13,146 @@ library(rgdal)
 library(leaflet)
 library(rsconnect)
 
-#create general data frame for plots
-charts_df = 
-  read_csv("./data/merged_wfls.csv")
-
-#create data frame with NAs removed
-charts_df_2 = 
-    read_csv("./data/merged_wfls.csv") %>% 
-    mutate(mean_leave_weeks = mean(leave_weeks)) %>% 
-    drop_na(borough, race, job_type, leave_type, education, partner, family_income)
 ```
 
 creating polygon map
 ```{r}
-zips = readOGR("./map/nyc_only_zip.shp", layer = "nyc_only_zip")
+zips = readOGR("./map/nyc_only_zips.shp", layer = "nyc_only_zips")
 
-basemap = 
+examplemap = 
 leaflet(zips) %>% 
     addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
     highlightOptions = highlightOptions(color = "white", weight = 2,
-      bringToFront = TRUE,
-      fillColor = ~colorQuantile("YlOrRd", leaveweeks)(leaveweeks))) %>% 
+      bringToFront = TRUE)) %>% 
   addProviderTiles(providers$CartoDB.Positron)
+
 ```
 
 adding colors
 ```{r}
 leavewkspal <- colorNumeric(
   palette = "viridis",
-  domain = as.numeric(zips$leaveweeks))
+  domain = as.numeric(zips$leaveweeks), na.color = NA)
 
 wksunpaidpal <- colorNumeric(
   palette = "viridis",
-  domain = as.numeric(zips$wksunpaid))
+  domain = as.numeric(zips$wksunpaid), na.color = NA)
 
-lvtypepal <- colorFactor(topo.colors(5), zips$leavetype)
+lvtypepal <- colorFactor(topo.colors(3), zips$leavetype, na.color = NA)
 
-parentpal <- colorFactor(topo.colors(5), zips$parenttype)
+parentpal <- colorFactor(topo.colors(3), zips$parenttype, na.color = NA)
 
-edpal <- colorFactor(topo.colors(5), zips$edtype)
+edpal <- colorFactor(topo.colors(3), zips$edtype, na.color = NA)
 
-racepal <- colorFactor(topo.colors(5), zips$race)
+racepal <- colorFactor(topo.colors(3), zips$race, na.color = NA)
 
-jobtypepal <- colorFactor(topo.colors(5), zips$jobtypefix)
+jobtypepal <- colorFactor(topo.colors(3), zips$jobtypefix, na.color = NA)
+
+neighborhoodpal  <- colorFactor(topo.colors(3), zips$X.neighborh, na.color = NA)
+
 ```
 
-alter maps
 ```{r}
-charts_df_2 %>% 
-  sample_n(100) %>% 
-  leaflet(basemap)
-  
+wksunpaid = 
+leaflet(zips) %>% 
+    addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+    highlightOptions = highlightOptions(color = "white", weight = 2,
+      bringToFront = TRUE),
+    opacity = 1.0, fillOpacity = 0.5,
+    fillColor = ~wksunpaidpal(as.numeric(zips$wksunpaid))) %>% 
+  addProviderTiles(providers$CartoDB.Positron)
+
+wksunpaid
+```
+
+```{r}
+leaveweeks = 
+leaflet(zips) %>% 
+    addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+    highlightOptions = highlightOptions(color = "white", weight = 2,
+      bringToFront = TRUE),
+    opacity = 1.0, fillOpacity = 0.5,
+    fillColor = ~leavewkspal(as.numeric(zips$leaveweeks))) %>% 
+  addProviderTiles(providers$CartoDB.Positron)
+
+leaveweeks
+```
+
+```{r}
+leavetype = 
+leaflet(zips) %>% 
+    addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+    highlightOptions = highlightOptions(color = "white", weight = 2,
+      bringToFront = TRUE),
+    opacity = 1.0, fillOpacity = 0.5,
+    fillColor = ~lvtypepal(zips$leavetype)) %>% 
+  addProviderTiles(providers$CartoDB.Positron)
+
+leavetype
+```
+
+```{r}
+parenttype = 
+leaflet(zips) %>% 
+    addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+    highlightOptions = highlightOptions(color = "white", weight = 2,
+      bringToFront = TRUE),
+    opacity = 1.0, fillOpacity = 0.5,
+    fillColor = ~parentpal(zips$parenttype)) %>% 
+  addProviderTiles(providers$CartoDB.Positron)
+
+parenttype
+```
+
+```{r}
+edtype = 
+leaflet(zips) %>% 
+    addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+    highlightOptions = highlightOptions(color = "white", weight = 2,
+      bringToFront = TRUE),
+    opacity = 1.0, fillOpacity = 0.5,
+    fillColor = ~edpal(zips$edtype)) %>% 
+  addProviderTiles(providers$CartoDB.Positron)
+
+edtype
+```
+
+```{r}
+race = 
+leaflet(zips) %>% 
+    addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+    highlightOptions = highlightOptions(color = "white", weight = 2,
+      bringToFront = TRUE),
+    opacity = 1.0, fillOpacity = 0.5,
+    fillColor = ~racepal(zips$race)) %>% 
+  addProviderTiles(providers$CartoDB.Positron)
+
+race
+```
+
+```{r}
+jobtype = 
+leaflet(zips) %>% 
+    addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+    highlightOptions = highlightOptions(color = "white", weight = 2,
+      bringToFront = TRUE),
+    opacity = 1.0, fillOpacity = 0.5,
+    fillColor = ~jobtypepal(zips$jobtypefix)) %>% 
+  addProviderTiles(providers$CartoDB.Positron)
+
+jobtype
+```
+
+```{r}
+neighborhood = 
+leaflet(zips) %>% 
+    addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+    highlightOptions = highlightOptions(color = "white", weight = 2,
+      bringToFront = TRUE),
+    opacity = 1.0, fillOpacity = 0.5,
+    fillColor = ~neighborhoodpal(zips$X.neighborh)) %>% 
+  addProviderTiles(providers$CartoDB.Positron)
+
+neighborhood
 ```
 

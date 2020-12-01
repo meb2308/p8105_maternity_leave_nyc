@@ -1,7 +1,7 @@
 
 setwd("~/Desktop/Data Science/p8105_maternity_leave_nyc/map")
 
-
+library(tidyverse)
 library(spdep)
 library(maptools)
 library(rgdal)
@@ -12,23 +12,23 @@ library(sf)
 unpaid_poly <- readOGR(dsn = "nyc_only_zips.shp", layer = "nyc_only_zips")
 names(unpaid_poly)
 
-###Create a queen's neighborhood weight matrix using the poly2nb command.
+###Creating a queen's neighborhood weight matrix using the poly2nb command.
 unpaid_nbq <- poly2nb(unpaid_poly)
 
 
-###extract coordinates to plot the connectivity matrix for visualization.
+###extracting coordinates to plot the connectivity matrix for potential visualization.
 coords <- coordinates(unpaid_poly)
 plot(unpaid_poly)
 plot(unpaid_nbq, coords, add=T)
 
 
-###convert the neighborhood matrix into a list so that the connections between counties can be used in
+###converting the neighborhood matrix into a list so that the connections between counties can be used in
 ###Moran's I test.
 summary(unpaid_nbq)
 unpaid_nbq_w <- nb2listw(unpaid_nbq, zero.policy=TRUE)
 
 
-###Convert Exposure variable to z-form and then create the lag of that variable.
+###Converting Exposure variable to z-form and then create the lag of that variable.
 unpaid_poly$swksunpaid <- scale(as.numeric(unpaid_poly$wksunpaid))
 unpaid_poly$lag_sWU <- lag.listw(unpaid_nbq_w, unpaid_poly$swksunpaid, zero.policy=TRUE, NAOK=TRUE)
 summary(unpaid_poly$swksunpaid)
@@ -39,15 +39,12 @@ head(unpaid_poly)
 unpaid_data <- as.data.frame(unpaid_poly)
 head(unpaid_data)
 
-###Run the morans I test.
+###Running the morans I test.
 moran.test(unpaid_poly$swksunpaid, listw=unpaid_nbq_w, na.action = na.omit, zero.policy = TRUE)
 ###moran's I statistic: 0.055, p-value = 0.2131
 #******REGRESSION ***********************
 
 ###Test baseline linear model.
-linear_df = read.csv("data/merged_wfls.csv")
-View(linear_df)
-
 unpaid.lm <- lm(wksunpaid~jobtypefix + parenttype + as.numeric(leaveweeks) + edtype + race + X.family_in + X.borough, data=unpaid_poly)
 summary(unpaid.lm)
 ###how to make the reference category different?
@@ -55,6 +52,7 @@ summary(unpaid.lm)
 unpaid.lm %>% 
   broom::glance()
 
+lm_output = 
 unpaid.lm %>% 
   broom::tidy() %>% 
   select(term, estimate, p.value) %>% 
@@ -79,30 +77,74 @@ unpaid.lm %>%
     term = str_replace(term, "^Race: 8", "Race: Other")) %>% 
   knitr::kable(digits = 3)
 
-modelr::add_residuals(linear_df, unpaid.lm)
-modelr::add_predictions(linear_df, unpaid.lm)
+
+
+###redoing regression with just csv to run residuals (can't with shapefile)
+library(readr)
+
+linear_df = 
+ read_csv("~/Desktop/Data Science/p8105_maternity_leave_nyc/data/merged_wfls.csv")
+View(merged_wfls)
+
+merged.lm <- lm(unpaid_leave_weeks~job_type + partner + leave_weeks + education + race + family_income + borough, data=linear_df)
+summary(merged.lm)
+
+modelr::add_residuals(linear_df, merged.lm)
+modelr::add_predictions(linear_df, merged.lm)
 
 linear_df %>% 
-  modelr::add_residuals(unpaid.lm) %>% 
+  modelr::add_residuals(merged.lm) %>% 
   ggplot(aes(x = job_type, y = resid)) + geom_violin()
 
 linear_df %>% 
-  modelr::add_residuals(unpaid.lm) %>% 
+  modelr::add_residuals(merged.lm) %>% 
   ggplot(aes(x = partner, y = resid)) + geom_violin()
 
 linear_df %>% 
-  modelr::add_residuals(unpaid.lm) %>% 
+  modelr::add_residuals(merged.lm) %>% 
   ggplot(aes(x = leave_weeks, y = resid)) + geom_violin()
 
 linear_df %>% 
-  modelr::add_residuals(unpaid.lm) %>% 
+  modelr::add_residuals(merged.lm) %>% 
   ggplot(aes(x = education, y = resid)) + geom_violin()
 
 linear_df %>% 
-  modelr::add_residuals(unpaid.lm) %>% 
+  modelr::add_residuals(merged.lm) %>% 
   ggplot(aes(x = race, y = resid)) + geom_violin()
 
 linear_df %>% 
-  modelr::add_residuals(unpaid.lm) %>% 
+  modelr::add_residuals(merged.lm) %>% 
   ggplot(aes(x = family_income, y = resid)) + geom_violin()
 
+linear_df %>% 
+  modelr::add_residuals(merged.lm) %>% 
+  ggplot(aes(x = borough, y = resid)) + geom_violin()
+
+
+###EXPLANATION
+###Because unpaid leave is likely related to income, and income is related to 
+###where a person lives, it is likely that there are spatial effects impacting 
+###rates of unpaid leave. To understand this,
+###we ran a Univariate Local Moran's I test, which was looking for spatial clusters 
+###of high and low unpaid leave weeks. This test seeks clusters that have a high 
+###number of unpaid leave weeks within the zipcode, but also in the zipcodes surrounding it. 
+### It also looks for clusters that have low local unpaid leave weeks and low unpaid leave 
+###weeks in the zip codes surrounding it. Finally, it looks for places where there is low leave
+###locally but high leave amongst the zip code's neighbors, and vice versa. This resulted in 
+###a Moran's I statistic of 0.055 and a p-value = 0.2131, signifying that there were not
+###significant spatial clusters. We could not move ahead with spatial analysis due to 
+###this finding, but it is likely that spatial clustering would exist with a more 
+###representative sample of NYC. 
+
+###After conducting this spatial analysis, we also ran a linear regression including a number 
+###of important covariates identified in our exploratory analysis. These covariates included job 
+###type, whether the parent had a partner, the number of weeks of leave they took total, the level
+###of education they attained, and their race, income, and borough. The outcome was the number of 
+###weeks of unpaid leave they took. We found an F-statistic of 6.907 with a p-value of < 0.01 on the
+###overall regression. More specifically, we found sigificance among the number of weeks of total 
+###leave (p < 0.001). As weeks of total leave increases, so does the number of unpaid leave weeks.
+###No other covariate was significant. This accounts for 64.35% of the relationship.
+
+###This was complex model and it should be noted that we did not conduct cross-validation on the 
+###relationships here. However, we did look at the residuals for each covariate, which can be seen
+###below. 
